@@ -4,6 +4,10 @@ A single-page app for logging time against Spoofhub tasks without the Spoofhub U
 
 Built for `https://projects.corp.com`. Talks directly to the Spoofhub v3 API from the browser — there is no backend.
 
+> [!IMPORTANT]
+> **Disclaimer & Privacy Notice**: This is an independent, client-side open-source utility that interacts solely with publicly available APIs. No API keys, credentials, or personal data are ever transmitted to or stored on any external server—everything remains strictly inside your local browser. See the full [Disclaimer & Legal Notice](#disclaimer--legal-notice) below.
+
+
 ## What it does
 
 - Lists open tasks across all your projects (or one project), filtered to *assigned to me*, *mine + unassigned*, or *everyone's*. Unassigned tasks are clearly badged.
@@ -89,3 +93,26 @@ tests/        Vitest unit tests
 | Red banner: key belongs to a different user | The email you typed isn't the owner of the API key. Sign in again with your own email. |
 | A row shows "Invalid request" | Spoofhub rejected the payload (code 1301). Usually the timesheet or task no longer exists — refresh and try again. |
 | Everything stalls with "rate limit hit" | Expected when saving many rows; it resumes by itself. |
+
+---
+
+## Disclaimer & Legal Notice
+
+### 1. Data Privacy & Zero-Server Architecture
+- **Client-Side Only**: This application operates entirely within your web browser. There is **no backend server, intermediate proxy, database, analytics tracker, or telemetry service** hosted or managed by the author.
+- **Local Storage Only**: Your API key, user identification, account details, and drafts are saved exclusively in your browser's local storage (`localStorage`).
+- **Direct Communication**: All network requests travel directly and securely over HTTPS from your browser to the designated API endpoint. At no point does the author, maintainer, or any third party have visibility into, access to, or custody of your credentials, project data, or time entries.
+
+### 2. Publicly Available APIs & Independent Development
+- This software solely interacts with standard, publicly documented API endpoints using credentials provided directly and voluntarily by the end user.
+- It does not bypass any authentication, modify proprietary server software, or access unauthorized resources.
+
+### 3. Trademarks & Non-Affiliation
+- **Non-Affiliation**: This software is an independent, unofficial, open-source project and is **NOT affiliated, associated, authorized, endorsed by, or in any way officially connected** with ProofHub, Spoofhub, or any of their subsidiaries, parent companies, or affiliates.
+- **Trademarks**: All product names, logos, brand names, trademarks, and registered trademarks mentioned or referenced in this project are the property of their respective owners. Any reference to third-party names, products, or services is strictly for identification, interoperability, and descriptive purposes only, and does not imply any sponsorship, affiliation, or endorsement.
+
+### 4. "AS IS" & Limitation of Liability
+- **No Warranty**: This software is provided strictly on an **"AS IS"** and **"AS AVAILABLE"** basis, without warranty of any kind, whether express, implied, statutory, or otherwise, including but not limited to warranties of merchantability, fitness for a particular purpose, non-infringement, accuracy, or uninterrupted operation.
+- **Limitation of Liability**: To the maximum extent permitted by applicable law, in no event shall the author(s), developer(s), or copyright holder(s) be held liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, loss of data, lost profits, business interruption, time logging discrepancies, account suspension, rate limit penalties, or API service changes) arising out of or in connection with the software or the use or other dealings in the software.
+- **User Responsibility**: Users assume full responsibility for safeguarding their own API credentials, verifying the accuracy of all submitted time entries, and ensuring that their usage complies with their organization's internal policies as well as the third-party platform's Terms of Service and Acceptable Use Policies.
+
