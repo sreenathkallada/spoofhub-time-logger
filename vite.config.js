@@ -5,6 +5,6 @@ import react from '@vitejs/plugin-react';
 // For GitHub Pages set base to '/<repo-name>/'.
 export default defineConfig({
   plugins: [react()],
-  base: '/',
+  base: '/spoofhub-time-logger/',
   test: { environment: 'node' },
 });
