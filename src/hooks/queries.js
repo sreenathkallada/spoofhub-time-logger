@@ -19,14 +19,21 @@ export function useWorkflows(enabled = true) {
   return useQuery({ queryKey: ['workflows'], queryFn: () => api.getWorkflows(), staleTime: 60 * MIN, enabled, retry: false });
 }
 
-/** Map stage id -> colour, from workflows (best effort). */
-export function useStageColors() {
-  const { data } = useWorkflows();
-  return useMemo(() => {
+/**
+ * Map workflow id -> { stages: [{id, title}], doneId }.
+ * The API returns stages in board order; the last one is the completion stage in every workflow.
+ */
+export function useWorkflowStages() {
+  const q = useWorkflows();
+  const byWorkflow = useMemo(() => {
     const m = {};
-    for (const wf of data || []) for (const st of wf.workflow_stages || []) m[String(st.id)] = st.color;
+    for (const wf of q.data || []) {
+      const stages = (wf.workflow_stages || []).map((s) => ({ id: String(s.id), title: s.title, color: s.color || null }));
+      if (stages.length) m[String(wf.id)] = { stages, doneId: stages[stages.length - 1].id };
+    }
     return m;
-  }, [data]);
+  }, [q.data]);
+  return { byWorkflow, loading: q.isLoading, error: q.error };
 }
 
 export function useTasks(projectId, enabled = true) {

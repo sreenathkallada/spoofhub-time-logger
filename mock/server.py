@@ -30,13 +30,15 @@ alltime.append({"by_me": True, "id": 777001, "status": "billable", "description"
 projects = [{"id": 9580929145, "title": "FC - FamNme Backend/Admin", "archived": False, "color": "#03A9F4", "assigned": [ME], "template": False},
             {"id": 9581010557, "title": "FC - Microsites Aggregator", "archived": False, "color": "#FFEB3B", "assigned": [ME], "template": False},
             {"id": 9533994962, "title": "Organizational Activities", "archived": False, "color": "#CDDC39", "assigned": [ME, 8206255563], "template": False}]
-workflows = [{"id": 2370975710, "title": "3-stage Kanban workflow", "workflow_stages": [{"id": 6950484625, "title": "Backlog", "color": "#FF9F1A"}, {"id": 6950498194, "title": "In progress", "color": "#378ADD"}]}]
+workflows = load('workflows.json', [{"id": 2370975710, "title": "3-stage Kanban workflow", "is_default": True, "workflow_stages": [
+    {"id": 6950484625, "title": "Backlog", "is_default": True}, {"id": 6950498194, "title": "In progress", "is_default": False}, {"id": 6950511762, "title": "Done", "is_default": True}]}])
+stage_titles = {str(st['id']): st['title'] for wf in workflows for st in wf.get('workflow_stages', [])}
 KEY = 'testkey'; counter = [0]; log = []; FAIL_429_AT = {5}
 
 class H(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
     def _cors(self):
-        self.send_header('Access-Control-Allow-Origin', '*'); self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, DELETE, PUT'); self.send_header('Access-Control-Allow-Headers', 'X-API-KEY,Accept,Content-Type,User-Agent')
+        self.send_header('Access-Control-Allow-Origin', '*'); self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, DELETE, PUT'); self.send_header('Access-Control-Allow-Headers', 'X-API-KEY,Accept,Content-Type,User-Agent,X-Comp-Url')
     def _json(self, obj, status=200, extra=None):
         body = json.dumps(obj).encode(); self.send_response(status); self._cors(); self.send_header('Content-Type', 'application/json')
         for k, v in (extra or {}).items(): self.send_header(k, v)
@@ -52,7 +54,9 @@ class H(BaseHTTPRequestHandler):
         log.append(('GET', path))
         if path.endswith('/people'): return self._json(people)
         if path.endswith('/projects'): return self._json(projects)
-        if path.endswith('/workflows'): return self._json(workflows)
+        if path.endswith('/workflows'):
+            if not self.headers.get('X-Comp-Url'): return self._json({"success": False, "status": False, "code": 1202, "message": "INCOMPLETE HEADERS COMPANY URL MISSING"})
+            return self._json(workflows)
         if path.endswith('/alltodo'):
             start = int(q.get('start', ['0'])[0]); limit = int(q.get('limit', ['100'])[0]); rows = [t for t in tasks if not t.get('completed')]
             if 'projects' in q: rows = [t for t in rows if str(t['project']['id']) == q['projects'][0]]
@@ -90,7 +94,13 @@ class H(BaseHTTPRequestHandler):
         m = re.search(r'/tasks/(\d+)$', path)
         if m:
             for t in tasks:
-                if str(t['id']) == m.group(1): t['completed'] = body.get('completed', False); return self._json(t)
+                if str(t['id']) == m.group(1):
+                    if 'completed' in body: t['completed'] = body['completed']
+                    if 'stage' in body:
+                        sid = str(body['stage'])
+                        if sid not in stage_titles: return self._json({"code": 1301, "message": "Invalid request", "response_code": 200})
+                        t['stage'] = {'id': int(sid), 'name': stage_titles[sid]}  # deliberately does NOT auto-complete on the last stage
+                    return self._json(t)
         self._json({"code": 1301, "message": "Invalid request", "response_code": 200})
     def do_DELETE(self):
         if not self._auth(): return

@@ -37,6 +37,10 @@ export function normaliseResponse(status, headers, json, parseFailed) {
   return detectErrorBody(json);
 }
 
+function hostOf(baseUrl) {
+  try { return new URL(baseUrl).host; } catch { return ''; }
+}
+
 function buildUrl(baseUrl, path, query) {
   const url = new URL(path.replace(/^\//, ''), baseUrl);
   if (query) {
@@ -58,6 +62,7 @@ export function request(method, path, { baseUrl, apiKey, body, query, priority =
         method,
         headers: {
           'X-API-KEY': apiKey,
+          'X-Comp-Url': hostOf(baseUrl), // required by /workflows; harmless elsewhere
           Accept: 'application/json',
           ...(body ? { 'Content-Type': 'application/json' } : {}),
         },

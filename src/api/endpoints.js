@@ -28,7 +28,7 @@ export function makeApi(getKey, getBase) {
   return {
     getPeople: (opts) => get('people', null, { priority: 'high', ...opts }),
     getProjects: (opts) => get('projects', null, { priority: 'high', ...opts }),
-    getWorkflows: (opts) => get('workflows', null, { priority: 'low', ...opts }),
+    getWorkflows: (opts) => get('workflows', { limit: 100 }, { priority: 'high', ...opts }),
 
     getOpenTasks: ({ projectId } = {}, opts) =>
       paged('alltodo', projectId ? { projects: projectId } : {}, { priority: 'high', ...opts }),
@@ -37,6 +37,8 @@ export function makeApi(getKey, getBase) {
       post(`projects/${projectId}/todolists/${listId}/tasks`, body, { priority: 'high', ...opts }),
     setTaskCompleted: (projectId, listId, taskId, completed, opts) =>
       put(`projects/${projectId}/todolists/${listId}/tasks/${taskId}`, { completed }, { priority: 'high', ...opts }),
+    setTaskStage: (projectId, listId, taskId, stageId, opts) =>
+      put(`projects/${projectId}/todolists/${listId}/tasks/${taskId}`, { stage: Number(stageId) || stageId }, opts),
 
     getTimesheets: (projectId, opts) => get(`projects/${projectId}/timesheets`, null, { priority: 'high', ...opts }),
     getMyTime: ({ userId, from, to }, opts) =>

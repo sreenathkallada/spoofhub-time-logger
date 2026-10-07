@@ -5,13 +5,14 @@ import { todayISO } from '../utils/time.js';
 
 export const isPristine = (r) => r.hours === '' && r.mins === '' && (r.description || '') === '' && r.state === 'idle';
 export const hasMeaningfulDrafts = (d) =>
-  Boolean(d && (d.newEntries.some((r) => !isPristine(r)) || Object.keys(d.editedEntries).length || d.deletedEntries.length));
+  Boolean(d && (d.newEntries.some((r) => !isPristine(r)) || Object.keys(d.editedEntries).length || d.deletedEntries.length || d.stageChange));
 
 const emptyTask = (meta) => ({
   meta, // { title, projectId, projectName, listId, listName }
   newEntries: [],
   editedEntries: {}, // entryId -> { ...values, original:{timesheetId,...}, state, error }
   deletedEntries: [], // { id, timesheetId, state, error }
+  stageChange: null, // { toId, toName, fromId, fromName, completes, state, error }
 });
 
 export const useDrafts = create(
@@ -107,6 +108,13 @@ export const useDrafts = create(
           return { drafts: { ...s.drafts, [taskId]: { ...d, meta: d.meta || meta, deletedEntries } } };
         }),
 
+      // ---- stage change (saved with Save all) ----
+      setStageChange: (taskId, meta, change) =>
+        set((s) => {
+          const d = s.drafts[taskId] || emptyTask(meta);
+          return { drafts: { ...s.drafts, [taskId]: { ...d, meta: d.meta || meta, stageChange: change ? { ...change, state: 'idle', error: null } : null } } };
+        }),
+
       // ---- state updates used by save-all ----
       patchItem: (taskId, kind, id, patch) =>
         set((s) => {
@@ -116,6 +124,7 @@ export const useDrafts = create(
           if (kind === 'new') next = { ...d, newEntries: d.newEntries.map((r) => (r.uid === id ? { ...r, ...patch } : r)) };
           if (kind === 'edit') next = { ...d, editedEntries: { ...d.editedEntries, [id]: { ...d.editedEntries[id], ...patch } } };
           if (kind === 'delete') next = { ...d, deletedEntries: d.deletedEntries.map((r) => (String(r.id) === String(id) ? { ...r, ...patch } : r)) };
+          if (kind === 'stage') next = { ...d, stageChange: d.stageChange ? { ...d.stageChange, ...patch } : null };
           return { drafts: { ...s.drafts, [taskId]: next } };
         }),
       pruneSaved: () =>
@@ -125,8 +134,9 @@ export const useDrafts = create(
             const newEntries = d.newEntries.filter((r) => r.state !== 'saved');
             const editedEntries = Object.fromEntries(Object.entries(d.editedEntries).filter(([, v]) => v.state !== 'saved'));
             const deletedEntries = d.deletedEntries.filter((r) => r.state !== 'saved');
-            if (newEntries.length || Object.keys(editedEntries).length || deletedEntries.length) {
-              drafts[taskId] = { ...d, newEntries, editedEntries, deletedEntries };
+            const stageChange = d.stageChange && d.stageChange.state !== 'saved' ? d.stageChange : null;
+            if (newEntries.length || Object.keys(editedEntries).length || deletedEntries.length || stageChange) {
+              drafts[taskId] = { ...d, newEntries, editedEntries, deletedEntries, stageChange };
             }
           }
           return { drafts };
@@ -141,6 +151,7 @@ export const useDrafts = create(
               newEntries: d.newEntries.map(reset),
               editedEntries: Object.fromEntries(Object.entries(d.editedEntries).map(([k, v]) => [k, reset(v)])),
               deletedEntries: d.deletedEntries.map(reset),
+              stageChange: d.stageChange ? reset(d.stageChange) : null,
             };
           }
           return { drafts };

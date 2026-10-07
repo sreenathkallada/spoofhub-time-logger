@@ -18,6 +18,7 @@ export default function SaveBar({ pending, running, progress, queueState, locked
   if (pending.creates) parts.push(`${pending.creates} new`);
   if (pending.edits) parts.push(`${pending.edits} ${pending.edits === 1 ? 'edit' : 'edits'}`);
   if (pending.deletes) parts.push(`${pending.deletes} ${pending.deletes === 1 ? 'deletion' : 'deletions'}`);
+  if (pending.stageMoves) parts.push(`${pending.stageMoves} stage ${pending.stageMoves === 1 ? 'change' : 'changes'}`);
 
   return (
     <div className="savebar">

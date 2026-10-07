@@ -22,12 +22,14 @@ function draftCounts(d) {
   d.newEntries.forEach((r) => bump(r, isValidEntry(r)));
   Object.values(d.editedEntries).forEach((r) => bump(r));
   d.deletedEntries.forEach((r) => bump(r));
+  if (d.stageChange) bump(d.stageChange);
   return { pending, failed, saving };
 }
 
-export default function TaskRow({ task, expanded, draft, projectColor, stageColor, workflowName, peopleById, myEntries, myTimeLoading, saving }) {
+export default function TaskRow({ task, expanded, draft, projectColor, workflow, workflowName, peopleById, myEntries, myTimeLoading, saving }) {
   const toggleExpanded = useDrafts((s) => s.toggleExpanded);
   const markCompleted = useDrafts((s) => s.markCompleted);
+  const setStageChange = useDrafts((s) => s.setStageChange);
   const userId = useSettings((s) => s.userId);
   const toast = useToast();
   const invalidate = useInvalidate();
@@ -38,6 +40,21 @@ export default function TaskRow({ task, expanded, draft, projectColor, stageColo
   const unassigned = assigned.length === 0 && !task.orphan;
   const mine = assigned.includes(String(userId));
   const counts = draftCounts(draft);
+  const stages = workflow?.stages || [];
+  const stageChange = draft?.stageChange || null;
+  const currentStageId = String(task.stage?.id || '');
+  const selectedStageId = stageChange?.toId || currentStageId;
+  const canChangeStage = mine && !task.orphan && stages.length > 0;
+  const stageBusy = ['queued', 'saving'].includes(stageChange?.state);
+
+  function onStageSelect(e) {
+    e.stopPropagation();
+    const toId = e.target.value;
+    if (toId === currentStageId) { setStageChange(id, meta, null); return; }
+    const to = stages.find((st) => st.id === toId);
+    setStageChange(id, meta, { toId, toName: to?.title || toId, fromId: currentStageId, fromName: task.stage?.name || '', completes: toId === workflow.doneId });
+  }
+  const meta = { title: task.title, projectId: task.project?.id, projectName: task.project?.name, listId: task.list?.id, listName: task.list?.name };
   const myMinutes = myEntries.reduce((s, e) => s + toMinutes(e.logged_hours, e.logged_mins), 0);
   const totalLogged = fmtDuration(task.logged_hours, task.logged_mins);
   const assigneeNames = assigned.map((a) => peopleById[a]).filter(Boolean).map((p) => `${p.first_name} ${p.last_name || ''}`.trim());
@@ -86,7 +103,24 @@ export default function TaskRow({ task, expanded, draft, projectColor, stageColo
           <div className="task-sub">
             <span title={tips.project(task.project?.name)}>{task.project?.name}</span>
             {task.list?.name && <><span className="sep">/</span><span title={tips.list(task.list.name)}>{task.list.name}</span></>}
-            {task.stage?.name && <span className="stage" style={stageColor ? { borderColor: stageColor, color: stageColor } : undefined} title={tips.stage(task.stage.name, workflowName)}>{task.stage.name}</span>}
+            {canChangeStage ? (
+              <select
+                className={`stage-select ${stageChange ? 'pending' : ''} ${stageChange?.state === 'failed' ? 'failed' : ''}`}
+                value={selectedStageId}
+                disabled={saving || stageBusy}
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+                onChange={onStageSelect}
+                aria-label={`Stage of "${task.title}"`}
+                title={stageChange ? tips.stagePending(stageChange.fromName, stageChange.toName, stageChange.completes, stageChange.error) : tips.stageSelect(task.stage?.name, workflowName)}
+              >
+                {!stages.some((st) => st.id === currentStageId) && task.stage?.name && <option value={currentStageId}>{task.stage.name}</option>}
+                {stages.map((st) => <option key={st.id} value={st.id}>{st.title}{st.id === workflow.doneId ? ' ✓' : ''}</option>)}
+              </select>
+            ) : (
+              task.stage?.name && <span className="stage" title={tips.stage(task.stage.name, workflowName)}>{task.stage.name}</span>
+            )}
+            {stageChange && <span className="stage-arrow" title={tips.stagePending(stageChange.fromName, stageChange.toName, stageChange.completes, stageChange.error)}>was {stageChange.fromName}{stageChange.completes ? ' · will complete' : ''}</span>}
             {task.start_date && <span className="due" title={tips.start(task.start_date)}><CalendarDays size={12} /> {fmtDate(task.start_date)} →</span>}
             {task.due_date && <span className={isOverdue(task.due_date) ? 'due overdue' : 'due'} title={tips.due(task.due_date, isOverdue(task.due_date))}><CalendarDays size={12} /> {fmtDate(task.due_date)}</span>}
             {(task.estimated_hours || task.estimated_mins) ? <span className="est" title={tips.estimate(task.estimated_hours, task.estimated_mins)}>est. {fmtDuration(task.estimated_hours, task.estimated_mins)}</span> : null}
@@ -102,7 +136,7 @@ export default function TaskRow({ task, expanded, draft, projectColor, stageColo
           {counts.failed > 0 && <span className="badge badge-red" title={tips.badgeFailed(counts.failed)}>{counts.failed} failed</span>}
           {counts.pending > 0 && <span className="badge badge-amber" title={tips.badgePending(counts.pending)}>{counts.pending} unsaved</span>}
         </div>
-        {!task.orphan && (
+        {!task.orphan && mine && stages.length === 0 && (
           <label className="complete" onClick={(e) => e.stopPropagation()} title={tips.complete(task.title)}>
             <input type="checkbox" checked={completing} onChange={complete} disabled={completing || saving} aria-label={`Mark "${task.title}" complete`} />
           </label>

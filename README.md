@@ -8,13 +8,13 @@ Works with any SpoofHub account: each user enters their own SpoofHub address at 
 
 ## What it does
 
-- Lists open tasks across all your projects (or one project), filtered to *assigned to me* or *mine + unassigned*. Unassigned tasks are clearly badged.
+- Lists open tasks across all your projects (or one project), filtered to *assigned to me*, *mine + unassigned* or *unassigned only*. Unassigned tasks are clearly badged.
 - Expand a task to see your recent entries on it and add new ones: date, hours, minutes, description, timesheet, billable status. `Enter` in the description adds another row.
 - Edit or delete your existing entries inline.
 - Keep several tasks expanded with unsaved rows; the footer shows the total and one **Save all** pushes everything. Drafts survive a page refresh.
 - Respects SpoofHub's rate limit (25 requests / 10 s): it stays under it and waits automatically when told to. Failed rows stay editable so you can fix and re-save just those.
 - Create a task (project → task list → title, dates, estimate, assignees).
-- Mark a task complete from the list, with undo.
+- Change a task's workflow stage from the list (only on tasks assigned to you). Stage changes are drafts sent with **Save all**; the last stage (marked ✓) completes the task.
 - Each person signs in with their SpoofHub address, their own API key and their email. Nothing is sent anywhere except that address.
 
 ## For users: signing in
@@ -61,7 +61,7 @@ All requests go through one queue (`src/api/queue.js`):
 
 SpoofHub sometimes returns errors as HTTP 200 with an error body (`{"success":false,"code":1001,...}` or `{"code":1301,"message":"Invalid request"}`); `src/api/client.js` detects these and treats them as errors.
 
-Requests made at startup: `/projects`, `/people`, `/workflows`, `/alltodo` (paged, 100 per request), `/alltime` (paged, last N days, N in Settings). Timesheets and task lists of a project are fetched the first time they're needed and cached.
+Requests made at startup: `/projects`, `/people`, `/workflows` (needs the `X-Comp-Url` header, which the app derives from the address), `/alltodo` (paged, 100 per request), `/alltime` (paged, last N days, N in Settings). Timesheets and task lists of a project are fetched the first time they're needed and cached.
 
 ### Local testing without a real SpoofHub
 

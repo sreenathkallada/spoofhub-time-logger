@@ -97,7 +97,7 @@ export default function TaskExpanded({ task, draft, myEntries, myTimeLoading, sa
             <Plus size={14} /> Add entry
           </button>
           {subtotal > 0 && <span className="muted small" title={tips.subtotal}>Unsaved on this task: <strong>{fmtDuration(0, subtotal)}</strong></span>}
-          {(newEntries.length > 1 || Object.keys(edited).length || deleted.length) ? (
+          {(newEntries.length > 1 || Object.keys(edited).length || deleted.length || draft?.stageChange) ? (
             <button className="btn-link small" disabled={saving} title={tips.discardTask} onClick={() => { if (confirm('Discard unsaved changes on this task?')) store.discardTask(id); }}>Discard this task's changes</button>
           ) : null}
         </div>

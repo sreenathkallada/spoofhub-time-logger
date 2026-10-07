@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useSettings } from '../store/settings.js';
 import { useDrafts, hasMeaningfulDrafts } from '../store/drafts.js';
-import { useStageColors } from '../hooks/queries.js';
+import { useWorkflowStages } from '../hooks/queries.js';
 import TaskRow from './TaskRow.jsx';
 import { tips } from '../utils/tips.js';
 
@@ -11,7 +11,7 @@ export default function TaskList({ tasks, loading, search, projects, peopleById,
   const drafts = useDrafts((s) => s.drafts);
   const expanded = useDrafts((s) => s.expanded);
   const completedIds = useDrafts((s) => s.completedIds);
-  const stageColors = useStageColors();
+  const { byWorkflow } = useWorkflowStages();
 
   const projectColor = useMemo(() => {
     const m = {};
@@ -29,6 +29,7 @@ export default function TaskList({ tasks, loading, search, projects, peopleById,
         const assigned = (t.assigned || []).map(String);
         const mine = assigned.includes(me);
         if (scope === 'mine') return mine;
+        if (scope === 'unassigned') return assigned.length === 0;
         return mine || assigned.length === 0; // 'mine+unassigned' (also the fallback for any stale stored value)
       })
       .filter((t) => {
@@ -53,7 +54,7 @@ export default function TaskList({ tasks, loading, search, projects, peopleById,
       <div className="tasklist-meta" title={tips.taskCount}>{visible.length} {visible.length === 1 ? 'task' : 'tasks'}{search ? ' match' : ''}</div>
       {visible.length === 0 && (
         <div className="empty">
-          {search ? 'Nothing matches that search.' : scope === 'mine' ? 'No open tasks are assigned to you. Try "Mine + unassigned", or create a task.' : 'No open tasks here.'}
+          {search ? 'Nothing matches that search.' : scope === 'mine' ? 'No open tasks are assigned to you. Try "Mine + unassigned", or create a task.' : scope === 'unassigned' ? 'No unassigned open tasks.' : 'No open tasks here.'}
         </div>
       )}
       {visible.map((t) => (
@@ -63,7 +64,7 @@ export default function TaskList({ tasks, loading, search, projects, peopleById,
           expanded={expanded.includes(String(t.id))}
           draft={drafts[String(t.id)]}
           projectColor={projectColor[String(t.project?.id)]}
-          stageColor={stageColors[String(t.stage?.id)]}
+          workflow={byWorkflow[String(t.workflow?.id)]}
           workflowName={t.workflow?.name}
           peopleById={peopleById}
           myEntries={myTimeByTask[String(t.id)] || []}

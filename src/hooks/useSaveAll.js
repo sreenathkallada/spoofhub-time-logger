@@ -23,7 +23,7 @@ const setLock = (on) => { try { on ? localStorage.setItem(LOCK_KEY, JSON.stringi
 /** Summarise pending drafts for the SaveBar. */
 export function usePendingSummary() {
   const drafts = useDrafts((s) => s.drafts);
-  let creates = 0, edits = 0, deletes = 0, minutes = 0, failed = 0, invalid = 0;
+  let creates = 0, edits = 0, deletes = 0, stageMoves = 0, minutes = 0, failed = 0, invalid = 0;
   const taskIds = new Set();
   for (const [taskId, d] of Object.entries(drafts)) {
     let touched = false;
@@ -35,9 +35,10 @@ export function usePendingSummary() {
     }
     for (const v of Object.values(d.editedEntries)) { if (v.state === 'failed') failed++; edits++; touched = true; }
     for (const v of d.deletedEntries) { if (v.state === 'failed') failed++; deletes++; touched = true; }
+    if (d.stageChange && d.stageChange.state !== 'saved') { if (d.stageChange.state === 'failed') failed++; stageMoves++; touched = true; }
     if (touched) taskIds.add(taskId);
   }
-  return { creates, edits, deletes, minutes, failed, invalid, tasks: taskIds.size, total: creates + edits + deletes };
+  return { creates, edits, deletes, stageMoves, minutes, failed, invalid, tasks: taskIds.size, total: creates + edits + deletes + stageMoves };
 }
 
 export function useSaveAll(onDone) {
@@ -113,6 +114,23 @@ export function useSaveAll(onDone) {
       }
     }
 
+    // stage changes go last, so time is logged before a task is completed
+    for (const [taskId, d] of Object.entries(store.drafts)) {
+      const sc = d.stageChange;
+      if (!sc || sc.state === 'saved' || !d.meta?.projectId) continue;
+      const { projectId, listId } = d.meta;
+      const opts = () => ({ signal: ac.signal, priority: 'normal' });
+      jobs.push({
+        taskId, kind: 'stage', id: 'stage', stageChange: sc,
+        run: async () => {
+          const res = await api.setTaskStage(projectId, listId, taskId, sc.toId, opts());
+          // Some servers complete the task themselves when it reaches the last stage; if not, do it explicitly.
+          if (sc.completes && res && res.completed !== true) await api.setTaskCompleted(projectId, listId, taskId, true, opts());
+          return res;
+        },
+      });
+    }
+
     if (!jobs.length) return;
     setRunning(true); setLock(true);
     setProgress({ done: 0, total: jobs.length });
@@ -128,6 +146,17 @@ export function useSaveAll(onDone) {
           patch.savedId = res?.id || 'unknown';
           const d = useDrafts.getState().drafts[j.taskId];
           if (d) store.rememberTimesheet(j.taskId, d.meta.projectId, j.timesheetId);
+        }
+        if (j.kind === 'stage') {
+          const sc = j.stageChange;
+          if (sc.completes) {
+            store.markCompleted(j.taskId, true);
+            qc.setQueriesData({ queryKey: ['tasks'] }, (old) => (Array.isArray(old) ? old.filter((t) => String(t.id) !== String(j.taskId)) : old));
+          } else {
+            qc.setQueriesData({ queryKey: ['tasks'] }, (old) => (Array.isArray(old)
+              ? old.map((t) => (String(t.id) === String(j.taskId) ? { ...t, stage: { id: Number(sc.toId) || sc.toId, name: sc.toName } } : t))
+              : old));
+          }
         }
         store.patchItem(j.taskId, j.kind, j.id, patch);
         ok++;
