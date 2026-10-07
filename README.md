@@ -43,8 +43,10 @@ Requires Node 18+.
 | Where | How |
 |---|---|
 | Netlify / Vercel / Cloudflare Pages | Connect the repo. Build command `npm run build`, publish directory `dist`. |
-| GitHub Pages | Set `base: '/<repo-name>/'` in `vite.config.js`, build, publish `dist`. |
+| GitHub Pages | Already wired up: `.github/workflows/deploy.yml` builds and publishes on every push to `main`. In the repository go to **Settings → Pages → Source** and choose **GitHub Actions** (once). The base path is detected from the repository name automatically. |
 | Internal server (nginx, IIS, Apache) | Copy the contents of `dist/` to the site root. No rewrites needed — the app has no client-side routes. |
+
+The site's base path is chosen in `vite.config.js`: `/<repo-name>/` when built by GitHub Actions, `/` everywhere else. Set `BASE_PATH` to override (for example `BASE_PATH=/` if the Pages site uses a custom domain or a `<user>.github.io` repository).
 
 Nothing company-specific is built in. Optionally, copy `.env.example` to `.env` and set `VITE_DEFAULT_SPOOFHUB_URL` to pre-fill the address field for your colleagues; they can still change it.
 
