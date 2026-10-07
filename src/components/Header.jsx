@@ -3,6 +3,7 @@ import { useSettings } from '../store/settings.js';
 import { fmtMinutes } from '../utils/time.js';
 import Avatar from './Avatar.jsx';
 import { tips } from '../utils/tips.js';
+import { hostOf } from '../utils/baseUrl.js';
 
 export default function Header({ projects, search, onSearch, onRefresh, refreshing, onNewTask, onSettings, savingLocked, unlinkedMinutes }) {
   const s = useSettings();
@@ -21,7 +22,7 @@ export default function Header({ projects, search, onSearch, onRefresh, refreshi
           <RefreshCw size={15} className={refreshing ? 'spin' : ''} /> Refresh
         </button>
         <button className="btn" onClick={onNewTask} title={tips.newTask}><Plus size={15} /> New task</button>
-        <button className="btn icon-only" onClick={onSettings} aria-label="Settings" title={tips.settings(s.userName, s.userEmail)}>
+        <button className="btn icon-only" onClick={onSettings} aria-label="Settings" title={tips.settings(s.userName, `${s.userEmail} · ${hostOf(s.baseUrl)}`)}>
           <Avatar initials={s.userInitials} color={s.userColor} name={s.userName} size={26} />
         </button>
       </div>

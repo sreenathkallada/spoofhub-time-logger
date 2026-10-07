@@ -3,12 +3,13 @@ import { ApiError } from './errors.js';
 
 export const PAGE = 100;
 
-export function makeApi(getKey) {
-  const k = () => getKey();
-  const get = (path, query, opts = {}) => request('GET', path, { apiKey: k(), query, ...opts });
-  const post = (path, body, opts = {}) => request('POST', path, { apiKey: k(), body, ...opts });
-  const put = (path, body, opts = {}) => request('PUT', path, { apiKey: k(), body, ...opts });
-  const del = (path, opts = {}) => request('DELETE', path, { apiKey: k(), ...opts });
+/** getKey and getBase are read on every call so a change in Settings applies immediately. */
+export function makeApi(getKey, getBase) {
+  const auth = () => ({ apiKey: getKey(), baseUrl: getBase() });
+  const get = (path, query, opts = {}) => request('GET', path, { ...auth(), query, ...opts });
+  const post = (path, body, opts = {}) => request('POST', path, { ...auth(), body, ...opts });
+  const put = (path, body, opts = {}) => request('PUT', path, { ...auth(), body, ...opts });
+  const del = (path, opts = {}) => request('DELETE', path, { ...auth(), ...opts });
 
   const asArray = (x) => (Array.isArray(x) ? x : x?.todos || x?.time_entries || x?.data || []);
 

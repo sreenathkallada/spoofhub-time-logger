@@ -88,11 +88,13 @@ export const tips = {
   // settings
   stStatus: 'Pre-selected billing status for every new row',
   stHistory: 'How far back to load your existing entries. Longer windows mean more requests at startup.',
-  stChange: 'Enter a different API key or email',
+  stChange: 'Connect to a different ProofHub address, or enter a different API key or email',
+  stAddress: 'The ProofHub server this browser is connected to. Change it via "Change address, key or email".',
   stSignOut: 'Remove your key and user from this browser. Unsaved rows are discarded.',
   stVerified: 'The key\'s owner matches the email you entered',
 
   // setup
+  suAddress: 'The web address you open ProofHub at, e.g. yourcompany.proofhub.com. The app adds /api/v3 itself.',
   suKey: 'Found in ProofHub: profile menu → click your profile picture five times',
   suShowKey: 'Show or hide the key while typing',
   suEmail: 'The email on your ProofHub profile — used only to find your account',

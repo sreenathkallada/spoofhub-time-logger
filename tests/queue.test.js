@@ -97,3 +97,17 @@ describe('RequestQueue', () => {
     expect((await p).kind).toBe('aborted');
   });
 });
+
+describe('RequestQueue retries option', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+  it('retries: 0 fails fast on network errors', async () => {
+    const q = new RequestQueue({ concurrency: 1, maxPerWindow: 100 });
+    let calls = 0;
+    const p = q.enqueue(async () => { calls++; throw new ApiError('network', 'down'); }, { retries: 0 }).catch((e) => e);
+    await tick(0);
+    expect((await p).kind).toBe('network');
+    await tick(20000);
+    expect(calls).toBe(1);
+  });
+});

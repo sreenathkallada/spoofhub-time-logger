@@ -5,6 +5,7 @@ import { useDrafts } from '../store/drafts.js';
 import { useQueryClient } from '@tanstack/react-query';
 import Avatar from './Avatar.jsx';
 import { tips } from '../utils/tips.js';
+import { hostOf } from '../utils/baseUrl.js';
 
 export default function SettingsDialog({ onClose, onChangeAccount }) {
   const s = useSettings();
@@ -38,7 +39,7 @@ export default function SettingsDialog({ onClose, onChangeAccount }) {
             <div className="muted small">{s.userEmail}{s.identityVerified ? <span title={tips.stVerified}> · verified</span> : ''}</div>
           </div>
           <div className="spacer" />
-          <button className="btn" onClick={onChangeAccount} title={tips.stChange}>Change key or email</button>
+          <button className="btn" onClick={onChangeAccount} title={tips.stChange}>Change address, key or email</button>
         </div>
 
         <div className="grid2">
@@ -56,7 +57,8 @@ export default function SettingsDialog({ onClose, onChangeAccount }) {
           </label>
         </div>
 
-        <p className="muted small">Your API key is stored only in this browser and sent only to projects.sblcorp.com. ProofHub allows about 25 requests every 10 seconds per account; this app keeps under that and waits automatically when told to.</p>
+        <p className="muted small" title={tips.stAddress}>Connected to <strong>{hostOf(s.baseUrl)}</strong> ({s.baseUrl}).</p>
+        <p className="muted small">Your API key is stored only in this browser and sent only to that address. ProofHub allows about 25 requests every 10 seconds per account; this app keeps under that and waits automatically when told to.</p>
 
         <div className="actions">
           <button className="btn btn-danger-outline" onClick={signOut} title={tips.stSignOut}>Sign out</button>

@@ -1,8 +1,7 @@
 import { ApiError } from './errors.js';
 import { RequestQueue } from './queue.js';
 
-// Override with VITE_API_BASE in a .env file if the company URL ever changes.
-export const BASE_URL = (import.meta.env && import.meta.env.VITE_API_BASE) || 'https://projects.sblcorp.com/api/v3/';
+// The ProofHub address is entered by the user at sign-in (see store/settings.js); nothing is hard-coded here.
 export const queue = new RequestQueue();
 
 /**
@@ -38,8 +37,8 @@ export function normaliseResponse(status, headers, json, parseFailed) {
   return detectErrorBody(json);
 }
 
-function buildUrl(path, query) {
-  const url = new URL(path.replace(/^\//, ''), BASE_URL);
+function buildUrl(baseUrl, path, query) {
+  const url = new URL(path.replace(/^\//, ''), baseUrl);
   if (query) {
     for (const [k, v] of Object.entries(query)) {
       if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v));
@@ -49,12 +48,13 @@ function buildUrl(path, query) {
 }
 
 /** Low-level request. Goes through the shared queue. Browsers set User-Agent themselves. */
-export function request(method, path, { apiKey, body, query, priority = 'normal', signal, label } = {}) {
+export function request(method, path, { baseUrl, apiKey, body, query, priority = 'normal', signal, label, retries } = {}) {
+  if (!baseUrl) return Promise.reject(new ApiError('client', 'No ProofHub address'));
   if (!apiKey) return Promise.reject(new ApiError('auth', 'No API key'));
   return queue.enqueue(async (abortSignal) => {
     let res;
     try {
-      res = await fetch(buildUrl(path, query), {
+      res = await fetch(buildUrl(baseUrl, path, query), {
         method,
         headers: {
           'X-API-KEY': apiKey,
@@ -80,5 +80,5 @@ export function request(method, path, { apiKey, body, query, priority = 'normal'
     const err = normaliseResponse(res.status, res.headers, json, parseFailed);
     if (err) throw err;
     return json;
-  }, { priority, signal, label: label || `${method} ${path}` });
+  }, { priority, signal, label: label || `${method} ${path}`, retries });
 }

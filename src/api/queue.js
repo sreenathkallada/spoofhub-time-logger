@@ -34,13 +34,14 @@ export class RequestQueue {
   }
 
   /** fn receives an AbortSignal and returns a promise. */
-  enqueue(fn, { priority = 'normal', signal, label = '' } = {}) {
+  enqueue(fn, { priority = 'normal', signal, label = '', retries } = {}) {
     return new Promise((resolve, reject) => {
       const job = {
         fn, resolve, reject, label,
         priority: PRIORITY[priority] ?? 1,
         seq: this.seq++,
         attempts: 0,
+        maxRetries: retries ?? this.maxRetries,
         signal,
         controller: new AbortController(),
       };
@@ -137,7 +138,7 @@ export class RequestQueue {
       this._insert(job);
       return;
     }
-    if ((kind === 'server' || kind === 'network') && job.attempts <= this.maxRetries) {
+    if ((kind === 'server' || kind === 'network') && job.attempts <= job.maxRetries) {
       const delay = 2000 * 2 ** (job.attempts - 1);
       setTimeout(() => { this._insert(job); this._pump(); }, delay);
       return;

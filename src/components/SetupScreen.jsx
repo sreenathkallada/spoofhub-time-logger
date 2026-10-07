@@ -5,10 +5,12 @@ import { friendlyError } from '../api/errors.js';
 import { useSettings } from '../store/settings.js';
 import Avatar from './Avatar.jsx';
 import { tips } from '../utils/tips.js';
+import { normaliseBaseUrl, hostOf } from '../utils/baseUrl.js';
 
 export default function SetupScreen({ initialStep = 1, onClose }) {
   const settings = useSettings();
   const [step, setStep] = useState(initialStep);
+  const [address, setAddress] = useState(settings.baseUrl ? hostOf(settings.baseUrl) : (import.meta.env.VITE_DEFAULT_PROOFHUB_URL || ''));
   const [key, setKey] = useState(settings.apiKey || '');
   const [showKey, setShowKey] = useState(false);
   const [email, setEmail] = useState(settings.userEmail || '');
@@ -16,17 +18,23 @@ export default function SetupScreen({ initialStep = 1, onClose }) {
   const [error, setError] = useState('');
   const [match, setMatch] = useState(null);
 
-  const api = makeApi(() => key.trim());
+  const normalised = normaliseBaseUrl(address);
+  const api = makeApi(() => key.trim(), () => normalised.url || '');
 
   async function checkKey(e) {
     e.preventDefault();
-    setError(''); setBusy(true);
+    setError('');
+    if (normalised.error) { setError(normalised.error); return; }
+    setBusy(true);
     try {
-      const projects = await api.getProjects();
+      const projects = await api.getProjects({ retries: 0 }); // fail fast: a wrong address shouldn't wait through retries
       if (!Array.isArray(projects)) throw new Error('Unexpected response from ProofHub');
       setStep(2);
     } catch (err) {
-      setError(err?.kind === 'auth' ? 'That key was rejected — check you copied all of it.' : friendlyError(err));
+      if (err?.kind === 'auth') setError('That key was rejected — check you copied all of it.');
+      else if (err?.kind === 'network') setError(`Couldn't reach ${normalised.host}. Check the address — it should be the one you open ProofHub at.`);
+      else if (err?.kind === 'parse' || err?.kind === 'notfound') setError(`${normalised.host} answered, but not like ProofHub. Check the address.`);
+      else setError(friendlyError(err));
     } finally { setBusy(false); }
   }
 
@@ -48,6 +56,7 @@ export default function SetupScreen({ initialStep = 1, onClose }) {
 
   function confirm() {
     settings.set({
+      baseUrl: normalised.url,
       apiKey: key.trim(),
       userEmail: email.trim(),
       userId: match.id,
@@ -66,16 +75,21 @@ export default function SetupScreen({ initialStep = 1, onClose }) {
         <p className="muted">A simpler way to log time against your ProofHub tasks. Two quick steps to connect.</p>
 
         <ol className="steps">
-          <li className={step === 1 ? 'active' : 'done'}>API key</li>
+          <li className={step === 1 ? 'active' : 'done'}>Connect</li>
           <li className={step === 2 ? 'active' : ''}>Your email</li>
         </ol>
 
         {step === 1 && (
           <form onSubmit={checkKey}>
-            <h2>Paste your ProofHub API key</h2>
+            <h2>Connect to your ProofHub</h2>
+            <label className="field">
+              <span>ProofHub address</span>
+              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} autoComplete="url" spellCheck={false} placeholder="yourcompany.proofhub.com" required title={tips.suAddress} inputMode="url" />
+              {normalised.url && !normalised.error && <span className="muted small">Will use {normalised.url}</span>}
+            </label>
             <div className="howto">
               <p>In ProofHub, open the <strong>profile menu</strong> (top right), then <strong>click your profile picture five times</strong>. A window shows your API key — copy it.</p>
-              <p className="muted small">The key stays in this browser only and is sent to projects.sblcorp.com and nowhere else.</p>
+              <p className="muted small">The address and key stay in this browser only; requests go to that address and nowhere else.</p>
             </div>
             <label className="field">
               <span>API key</span>
@@ -87,7 +101,7 @@ export default function SetupScreen({ initialStep = 1, onClose }) {
             {error && <p className="error-text">{error}</p>}
             <div className="actions">
               {onClose && <button type="button" className="btn" onClick={onClose}>Cancel</button>}
-              <button className="btn btn-primary" disabled={busy || !key.trim()}>{busy ? 'Checking…' : 'Next'}</button>
+              <button className="btn btn-primary" disabled={busy || !key.trim() || !address.trim()}>{busy ? 'Checking…' : 'Next'}</button>
             </div>
           </form>
         )}
@@ -98,7 +112,7 @@ export default function SetupScreen({ initialStep = 1, onClose }) {
             <p className="muted">Enter the email you use to sign in to ProofHub.</p>
             <label className="field">
               <span>Email</span>
-              <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setMatch(null); }} autoComplete="email" placeholder="name@sblcorp.com" required title={tips.suEmail} />
+              <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setMatch(null); }} autoComplete="email" placeholder="name@yourcompany.com" required title={tips.suEmail} />
             </label>
             {error && <p className="error-text">{error}</p>}
             {match ? (

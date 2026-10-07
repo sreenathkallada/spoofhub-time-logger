@@ -52,3 +52,24 @@ describe('timesheet default rule', () => {
     expect(usableTimesheets(ts, 7).map((t) => t.id)).toEqual([3, 4]);
   });
 });
+
+import { normaliseBaseUrl, hostOf } from '../src/utils/baseUrl.js';
+describe('base url normalisation', () => {
+  it('accepts a bare host', () => { expect(normaliseBaseUrl('projects.sblcorp.com').url).toBe('https://projects.sblcorp.com/api/v3/'); });
+  it('accepts full forms', () => {
+    expect(normaliseBaseUrl('https://projects.sblcorp.com/').url).toBe('https://projects.sblcorp.com/api/v3/');
+    expect(normaliseBaseUrl('https://projects.sblcorp.com/api/v3').url).toBe('https://projects.sblcorp.com/api/v3/');
+    expect(normaliseBaseUrl('https://projects.sblcorp.com/api/v3/').url).toBe('https://projects.sblcorp.com/api/v3/');
+    expect(normaliseBaseUrl('http://localhost:8787').url).toBe('http://localhost:8787/api/v3/');
+    expect(normaliseBaseUrl('  HTTPS://Example.com/sub/ ').url).toBe('https://example.com/sub/api/v3/');
+  });
+  it('rejects bad input', () => {
+    expect(normaliseBaseUrl('').error).toBeTruthy();
+    expect(normaliseBaseUrl('ftp://x.com').error).toBeTruthy();
+    expect(normaliseBaseUrl('not a url').error).toBeTruthy();
+  });
+  it('extracts the host', () => { expect(hostOf('https://projects.sblcorp.com/api/v3/')).toBe('projects.sblcorp.com'); });
+});
+describe('base url rejects hosts with spaces', () => {
+  it('rejects', () => { expect(normaliseBaseUrl('not a url').error).toBeTruthy(); expect(normaliseBaseUrl('https://bad host.com').error).toBeTruthy(); expect(normaliseBaseUrl('[::1]:8787').url).toBe('https://[::1]:8787/api/v3/'); });
+});
