@@ -58,7 +58,7 @@ export default function SettingsDialog({ onClose, onChangeAccount }) {
         </div>
 
         <p className="muted small" title={tips.stAddress}>Connected to <strong>{hostOf(s.baseUrl)}</strong> ({s.baseUrl}).</p>
-        <p className="muted small">Your API key is stored only in this browser and sent only to that address. ProofHub allows about 25 requests every 10 seconds per account; this app keeps under that and waits automatically when told to.</p>
+        <p className="muted small">Your API key is stored only in this browser and sent only to that address. SpoofHub allows about 25 requests every 10 seconds per account; this app keeps under that and waits automatically when told to.</p>
 
         <div className="actions">
           <button className="btn btn-danger-outline" onClick={signOut} title={tips.stSignOut}>Sign out</button>

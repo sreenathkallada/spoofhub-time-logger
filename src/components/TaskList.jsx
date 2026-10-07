@@ -46,7 +46,7 @@ export default function TaskList({ tasks, loading, search, projects, peopleById,
   const knownIds = useMemo(() => new Set((tasks || []).map((t) => String(t.id))), [tasks]);
   const orphanDrafts = Object.entries(drafts).filter(([id, d]) => !knownIds.has(String(id)) && hasMeaningfulDrafts(d));
 
-  if (loading) return <div className="empty">Loading your tasks from ProofHub…</div>;
+  if (loading) return <div className="empty">Loading your tasks from SpoofHub…</div>;
   if (!tasks) return null;
 
   return (
@@ -75,7 +75,7 @@ export default function TaskList({ tasks, loading, search, projects, peopleById,
       {orphanDrafts.length > 0 && (
         <section className="orphans">
           <h3>Unsaved work on tasks no longer in your list</h3>
-          <p className="muted small">These tasks were completed, reassigned, or deleted in ProofHub since you started. Your entries are kept here.</p>
+          <p className="muted small">These tasks were completed, reassigned, or deleted in SpoofHub since you started. Your entries are kept here.</p>
           {orphanDrafts.map(([id, d]) => (
             <TaskRow
               key={id}

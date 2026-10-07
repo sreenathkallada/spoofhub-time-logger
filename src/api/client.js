@@ -1,11 +1,11 @@
 import { ApiError } from './errors.js';
 import { RequestQueue } from './queue.js';
 
-// The ProofHub address is entered by the user at sign-in (see store/settings.js); nothing is hard-coded here.
+// The SpoofHub address is entered by the user at sign-in (see store/settings.js); nothing is hard-coded here.
 export const queue = new RequestQueue();
 
 /**
- * Detect ProofHub's "HTTP 200 but actually an error" bodies:
+ * Detect SpoofHub's "HTTP 200 but actually an error" bodies:
  *   {"success":false,"status":false,"code":1001,"message":"WRONG ACCESS TOKEN"}
  *   {"code":1301,"message":"Invalid request","response_code":200}
  *   {"code":2033,"message":"Value of the custom field does not match its type."}
@@ -49,7 +49,7 @@ function buildUrl(baseUrl, path, query) {
 
 /** Low-level request. Goes through the shared queue. Browsers set User-Agent themselves. */
 export function request(method, path, { baseUrl, apiKey, body, query, priority = 'normal', signal, label, retries } = {}) {
-  if (!baseUrl) return Promise.reject(new ApiError('client', 'No ProofHub address'));
+  if (!baseUrl) return Promise.reject(new ApiError('client', 'No SpoofHub address'));
   if (!apiKey) return Promise.reject(new ApiError('auth', 'No API key'));
   return queue.enqueue(async (abortSignal) => {
     let res;

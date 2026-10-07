@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware';
 export const useSettings = create(
   persist(
     (set) => ({
-      baseUrl: '',   // e.g. https://yourcompany.proofhub.com/api/v3/ — entered at sign-in
+      baseUrl: '',   // e.g. https://projects.yourcompany.com/api/v3/ — entered at sign-in
       apiKey: '',
       userEmail: '',
       userId: null,

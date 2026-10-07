@@ -1,14 +1,14 @@
 /**
- * Turn whatever the user typed into a ProofHub API base URL:
- *   "projects.sblcorp.com"                  -> https://projects.sblcorp.com/api/v3/
- *   "https://projects.sblcorp.com/"         -> https://projects.sblcorp.com/api/v3/
- *   "https://projects.sblcorp.com/api/v3"   -> https://projects.sblcorp.com/api/v3/
+ * Turn whatever the user typed into a SpoofHub API base URL:
+ *   "projects.example.com"                  -> https://projects.example.com/api/v3/
+ *   "https://projects.example.com/"         -> https://projects.example.com/api/v3/
+ *   "https://projects.example.com/api/v3"   -> https://projects.example.com/api/v3/
  *   "http://localhost:8787"                 -> http://localhost:8787/api/v3/
  * Returns { url } or { error }.
  */
 export function normaliseBaseUrl(input) {
   let raw = String(input || '').trim();
-  if (!raw) return { error: 'Enter your ProofHub address' };
+  if (!raw) return { error: 'Enter your SpoofHub address' };
   if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)) raw = 'https://' + raw;
   let u;
   try { u = new URL(raw); } catch { return { error: 'That doesn\'t look like a valid address' }; }

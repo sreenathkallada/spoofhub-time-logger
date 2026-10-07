@@ -1,6 +1,6 @@
-# Mock ProofHub for local testing
+# Mock SpoofHub for local testing
 
-`python3 mock/server.py` starts a fake ProofHub v3 API on `http://127.0.0.1:8787`
+`python3 mock/server.py` starts a fake SpoofHub v3 API on `http://127.0.0.1:8787`
 (API key `testkey`, user `test@example.com`). It mimics the real API's quirks: errors as
 HTTP 200 bodies, a `429` on the 5th write, the whole collection returned for a bad id.
 

@@ -14,9 +14,9 @@ export function friendlyError(err) {
     switch (err.kind) {
       case 'auth': return 'API key rejected. Check Settings.';
       case 'rate': return 'Rate limit hit. Retrying…';
-      case 'server': return 'ProofHub server error. Try again shortly.';
+      case 'server': return 'SpoofHub server error. Try again shortly.';
       case 'network': return 'Network error. Check your connection.';
-      case 'notfound': return 'This item no longer exists in ProofHub.';
+      case 'notfound': return 'This item no longer exists in SpoofHub.';
       case 'aborted': return 'Cancelled';
       default: return err.message || 'Request failed';
     }

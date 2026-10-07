@@ -50,7 +50,7 @@ export function makeApi(getKey, getBase) {
   };
 }
 
-/** After a GET by id, ProofHub returns the whole collection for a bad id. */
+/** After a GET by id, SpoofHub returns the whole collection for a bad id. */
 export function assertId(result, id) {
   if (!result || Array.isArray(result) || String(result.id) !== String(id)) {
     throw new ApiError('notfound', 'Not found');

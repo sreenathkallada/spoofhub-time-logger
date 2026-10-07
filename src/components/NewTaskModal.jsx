@@ -48,7 +48,7 @@ export default function NewTaskModal({ projects, peopleById, onClose, onCreated 
     if (assigned.length) body.assigned = assigned;
     try {
       const task = await api.createTask(projectId, listId, body);
-      if (!task?.id) throw new Error('ProofHub did not return the new task');
+      if (!task?.id) throw new Error('SpoofHub did not return the new task');
       invalidate.setTasks((old) => (Array.isArray(old) ? [task, ...old.filter((t) => String(t.id) !== String(task.id))] : old));
       invalidate.tasks();
       onCreated(task);

@@ -1,4 +1,4 @@
-"""Tiny stand-in for the ProofHub v3 API, used for local UI testing.
+"""Tiny stand-in for the SpoofHub v3 API, used for local UI testing.
 Loads fixture files from FIXTURES (defaults to ./fixtures). API key is 'testkey'.
 Run:  python3 mock/server.py   then sign in with address http://127.0.0.1:8787
 """
@@ -101,5 +101,5 @@ class H(BaseHTTPRequestHandler):
         self._json({"code": 1301, "message": "Invalid request", "response_code": 200})
 
 if __name__ == '__main__':
-    print('mock ProofHub on http://127.0.0.1:8787  (API key: testkey)')
+    print('mock SpoofHub on http://127.0.0.1:8787  (API key: testkey)')
     ThreadingHTTPServer(('127.0.0.1', 8787), H).serve_forever()

@@ -10,7 +10,7 @@ import { normaliseBaseUrl, hostOf } from '../utils/baseUrl.js';
 export default function SetupScreen({ initialStep = 1, onClose }) {
   const settings = useSettings();
   const [step, setStep] = useState(initialStep);
-  const [address, setAddress] = useState(settings.baseUrl ? hostOf(settings.baseUrl) : (import.meta.env.VITE_DEFAULT_PROOFHUB_URL || ''));
+  const [address, setAddress] = useState(settings.baseUrl ? hostOf(settings.baseUrl) : (import.meta.env.VITE_DEFAULT_SPOOFHUB_URL || ''));
   const [key, setKey] = useState(settings.apiKey || '');
   const [showKey, setShowKey] = useState(false);
   const [email, setEmail] = useState(settings.userEmail || '');
@@ -28,12 +28,12 @@ export default function SetupScreen({ initialStep = 1, onClose }) {
     setBusy(true);
     try {
       const projects = await api.getProjects({ retries: 0 }); // fail fast: a wrong address shouldn't wait through retries
-      if (!Array.isArray(projects)) throw new Error('Unexpected response from ProofHub');
+      if (!Array.isArray(projects)) throw new Error('Unexpected response from SpoofHub');
       setStep(2);
     } catch (err) {
       if (err?.kind === 'auth') setError('That key was rejected — check you copied all of it.');
-      else if (err?.kind === 'network') setError(`Couldn't reach ${normalised.host}. Check the address — it should be the one you open ProofHub at.`);
-      else if (err?.kind === 'parse' || err?.kind === 'notfound') setError(`${normalised.host} answered, but not like ProofHub. Check the address.`);
+      else if (err?.kind === 'network') setError(`Couldn't reach ${normalised.host}. Check the address — it should be the one you open SpoofHub at.`);
+      else if (err?.kind === 'parse' || err?.kind === 'notfound') setError(`${normalised.host} answered, but not like SpoofHub. Check the address.`);
       else setError(friendlyError(err));
     } finally { setBusy(false); }
   }
@@ -46,10 +46,10 @@ export default function SetupScreen({ initialStep = 1, onClose }) {
       const wanted = email.trim().toLowerCase();
       const person = (people || []).find((p) => String(p.email || '').trim().toLowerCase() === wanted);
       if (!person) {
-        setError('No ProofHub user has that email. Check the spelling, or ask your admin which email your ProofHub account uses.');
+        setError('No SpoofHub user has that email. Check the spelling, or ask your admin which email your SpoofHub account uses.');
         return;
       }
-      if (person.suspended) { setError('That ProofHub account is suspended.'); return; }
+      if (person.suspended) { setError('That SpoofHub account is suspended.'); return; }
       setMatch(person);
     } catch (err) { setError(friendlyError(err)); } finally { setBusy(false); }
   }
@@ -72,7 +72,7 @@ export default function SetupScreen({ initialStep = 1, onClose }) {
     <div className="setup">
       <div className="setup-card">
         <div className="setup-brand"><Clock size={22} /> <span>Time Logger</span></div>
-        <p className="muted">A simpler way to log time against your ProofHub tasks. Two quick steps to connect.</p>
+        <p className="muted">A simpler way to log time against your SpoofHub tasks. Two quick steps to connect.</p>
 
         <ol className="steps">
           <li className={step === 1 ? 'active' : 'done'}>Connect</li>
@@ -81,14 +81,14 @@ export default function SetupScreen({ initialStep = 1, onClose }) {
 
         {step === 1 && (
           <form onSubmit={checkKey}>
-            <h2>Connect to your ProofHub</h2>
+            <h2>Connect to your SpoofHub</h2>
             <label className="field">
-              <span>ProofHub address</span>
-              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} autoComplete="url" spellCheck={false} placeholder="yourcompany.proofhub.com" required title={tips.suAddress} inputMode="url" />
+              <span>SpoofHub address</span>
+              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} autoComplete="url" spellCheck={false} placeholder="projects.yourcompany.com" required title={tips.suAddress} inputMode="url" />
               {normalised.url && !normalised.error && <span className="muted small">Will use {normalised.url}</span>}
             </label>
             <div className="howto">
-              <p>In ProofHub, open the <strong>profile menu</strong> (top right), then <strong>click your profile picture five times</strong>. A window shows your API key — copy it.</p>
+              <p>In your SpoofHub account (the site at the address above), open the <strong>profile menu</strong> (top right), then <strong>click your profile picture five times</strong>. A window shows your API key — copy it.</p>
               <p className="muted small">The address and key stay in this browser only; requests go to that address and nowhere else.</p>
             </div>
             <label className="field">
@@ -108,8 +108,8 @@ export default function SetupScreen({ initialStep = 1, onClose }) {
 
         {step === 2 && (
           <form onSubmit={checkEmail}>
-            <h2>Which ProofHub account is yours?</h2>
-            <p className="muted">Enter the email you use to sign in to ProofHub.</p>
+            <h2>Which SpoofHub account is yours?</h2>
+            <p className="muted">Enter the email you use to sign in to SpoofHub.</p>
             <label className="field">
               <span>Email</span>
               <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setMatch(null); }} autoComplete="email" placeholder="name@yourcompany.com" required title={tips.suEmail} />

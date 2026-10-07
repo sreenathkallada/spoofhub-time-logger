@@ -29,7 +29,7 @@ export default function MainScreen() {
   const pending = usePendingSummary();
   const save = useSaveAll(({ ok, failed }) => {
     if (failed) toast({ message: `${ok} saved · ${failed} failed — fix the highlighted rows and save again`, tone: 'warn', ttl: 8000 });
-    else toast({ message: `${ok} ${ok === 1 ? 'change' : 'changes'} saved to ProofHub`, tone: 'success' });
+    else toast({ message: `${ok} ${ok === 1 ? 'change' : 'changes'} saved to SpoofHub`, tone: 'success' });
   });
 
   useEffect(() => {
@@ -80,7 +80,7 @@ export default function MainScreen() {
       {!online && <div className="banner banner-warn">You're offline. Drafts are kept; saving resumes when you're back.</div>}
       {authError && (
         <div className="banner banner-danger">
-          Your API key was rejected by ProofHub. <button className="btn-link" onClick={() => setReauth(true)}>Update key</button>
+          Your API key was rejected by SpoofHub. <button className="btn-link" onClick={() => setReauth(true)}>Update key</button>
         </div>
       )}
       {identityMismatch && (
@@ -90,7 +90,7 @@ export default function MainScreen() {
         </div>
       )}
       {otherError && !authError && (
-        <div className="banner banner-warn">Couldn't load from ProofHub: {otherError.message}. <button className="btn-link" onClick={() => invalidate.all()}>Retry</button></div>
+        <div className="banner banner-warn">Couldn't load from SpoofHub: {otherError.message}. <button className="btn-link" onClick={() => invalidate.all()}>Retry</button></div>
       )}
 
       <main className="content">
