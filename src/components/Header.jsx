@@ -34,7 +34,6 @@ export default function Header({ projects, search, onSearch, onRefresh, refreshi
         <select value={s.scope} onChange={(e) => s.set({ scope: e.target.value })} aria-label="Assignment" title={tips.scopeFilter}>
           <option value="mine">Assigned to me</option>
           <option value="mine+unassigned">Mine + unassigned</option>
-          <option value="all">Everyone's tasks</option>
         </select>
         <label className="search" title={tips.search}>
           <Search size={15} />

@@ -20,7 +20,11 @@ export const useSettings = create(
       signOut: () =>
         set({ baseUrl: '', apiKey: '', userEmail: '', userId: null, userName: '', userInitials: '', userColor: '', identityVerified: false }),
     }),
-    { name: 'phtl.settings', version: 1 },
+    {
+      name: 'phtl.settings',
+      version: 2,
+      migrate: (state) => ({ ...state, scope: state?.scope === 'all' ? 'mine+unassigned' : state?.scope }),
+    },
   ),
 );
 

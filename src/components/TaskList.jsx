@@ -29,8 +29,7 @@ export default function TaskList({ tasks, loading, search, projects, peopleById,
         const assigned = (t.assigned || []).map(String);
         const mine = assigned.includes(me);
         if (scope === 'mine') return mine;
-        if (scope === 'mine+unassigned') return mine || assigned.length === 0;
-        return true;
+        return mine || assigned.length === 0; // 'mine+unassigned' (also the fallback for any stale stored value)
       })
       .filter((t) => {
         if (!q) return true;

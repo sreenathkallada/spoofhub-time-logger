@@ -8,7 +8,7 @@ Works with any SpoofHub account: each user enters their own SpoofHub address at 
 
 ## What it does
 
-- Lists open tasks across all your projects (or one project), filtered to *assigned to me*, *mine + unassigned*, or *everyone's*. Unassigned tasks are clearly badged.
+- Lists open tasks across all your projects (or one project), filtered to *assigned to me* or *mine + unassigned*. Unassigned tasks are clearly badged.
 - Expand a task to see your recent entries on it and add new ones: date, hours, minutes, description, timesheet, billable status. `Enter` in the description adds another row.
 - Edit or delete your existing entries inline.
 - Keep several tasks expanded with unsaved rows; the footer shows the total and one **Save all** pushes everything. Drafts survive a page refresh.

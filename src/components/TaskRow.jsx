@@ -82,7 +82,6 @@ export default function TaskRow({ task, expanded, draft, projectColor, stageColo
             <span className="title-text" title={tips.title(task)}>{task.title}</span>
             {task.ticket && <span className="ticket" title={tips.ticket(task.ticket)}>#{task.ticket}</span>}
             {unassigned && <span className="badge badge-amber" title={tips.unassigned}>Unassigned</span>}
-            {!unassigned && !mine && !task.orphan && <span className="badge badge-grey" title={tips.notMine(assigneeNames)}>Not mine</span>}
           </div>
           <div className="task-sub">
             <span title={tips.project(task.project?.name)}>{task.project?.name}</span>
