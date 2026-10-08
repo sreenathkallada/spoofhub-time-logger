@@ -45,6 +45,7 @@ It was written for a small team and shared in case it is useful to other ProofHu
 - Add a comment to a task.
 
 **Safety and privacy**
+- Sign-in is refused unless the API key provably belongs to the email entered, so a key cannot be used to view another member's tasks. If a stored session is found not to match, the app signs out.
 - Your ProofHub address, API key and user id live only in your browser's `localStorage`. The app sends requests to your ProofHub address and nowhere else — no backend, no analytics, no third-party scripts.
 - Rate-limit aware: stays under ProofHub's 25 requests / 10 seconds and waits automatically on `429`.
 
@@ -53,7 +54,7 @@ It was written for a small team and shared in case it is useful to other ProofHu
 1. Open https://sreenathkallada.github.io/spoofhub-time-logger/ (or your own deployment).
 2. Enter your **ProofHub address** — the one you open ProofHub at, e.g. `yourcompany.proofhub.com`. With or without `https://`; the app adds `/api/v3` itself.
 3. Get your API key: in ProofHub open the **profile menu** (top right) and **click your profile picture five times**. Copy the key and paste it under the address. Press **Next**.
-4. Enter the email of your ProofHub account. The app finds you and shows your name — confirm it.
+4. Enter the email of your ProofHub account. The app finds you and shows your name — confirm it. Before completing sign-in, the app checks that the key really belongs to that account (using the `by_me` flags the API puts on your own tasks and time entries); a key/email mismatch is refused, and a brand-new account with no tasks or entries yet cannot be verified until it has one.
 
 **Settings** (avatar, top right) lets you change address, key or email, set the default billing status, how far back to load entries, your daily target, and which view opens first. **Sign out** wipes everything stored.
 
@@ -119,7 +120,8 @@ tests/        Vitest unit tests
 | "Couldn't reach …" at sign-in | Wrong address or blocked network. Use the address you open ProofHub at. |
 | "That key was rejected" | Key copied incompletely or regenerated. Get it again from the profile picture pop-up. |
 | "No … user has that email" | The email must match your ProofHub profile exactly. Ask an admin which email is on the account. |
-| Red banner: key belongs to a different user | The email isn't the owner of the API key. Sign in again with your own email. |
+| "This API key does not belong to …" | The email isn't the owner of the API key. Sign in with the email of the account the key came from. |
+| "Couldn't confirm that this key belongs to …" | The account has no tasks or time entries to check against. Log one entry or create one task in the original application and then try again. |
 | A row shows "Invalid request" | ProofHub rejected the payload (code 1301): usually the timesheet or task no longer exists. Refresh and retry. |
 | "INCOMPLETE HEADERS" | Seen when a required header is missing. The app sends them; if you see this, you are probably on an old build — redeploy. |
 | "rate limit hit, resuming in …" | Expected when saving many rows; it continues by itself. |

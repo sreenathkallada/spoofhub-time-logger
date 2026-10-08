@@ -6,8 +6,9 @@ import { useSettings } from '../store/settings.js';
 import Avatar from './Avatar.jsx';
 import { tips } from '../utils/tips.js';
 import { normaliseBaseUrl, hostOf } from '../utils/baseUrl.js';
+import { verifyKeyOwner } from '../utils/identity.js';
 
-export default function SetupScreen({ initialStep = 1, onClose }) {
+export default function SetupScreen({ initialStep = 1, onClose, notice }) {
   const settings = useSettings();
   const [step, setStep] = useState(initialStep);
   const [address, setAddress] = useState(settings.baseUrl ? hostOf(settings.baseUrl) : (import.meta.env.VITE_DEFAULT_SPOOFHUB_URL || ''));
@@ -54,18 +55,32 @@ export default function SetupScreen({ initialStep = 1, onClose }) {
     } catch (err) { setError(friendlyError(err)); } finally { setBusy(false); }
   }
 
-  function confirm() {
-    settings.set({
-      baseUrl: normalised.url,
-      apiKey: key.trim(),
-      userEmail: email.trim(),
-      userId: match.id,
-      userName: `${match.first_name || ''} ${match.last_name || ''}`.trim(),
-      userInitials: match.initials || '',
-      userColor: match.profile_color || '',
-      identityVerified: false,
-    });
-    onClose?.();
+  async function confirm() {
+    setError(''); setBusy(true);
+    try {
+      const v = await verifyKeyOwner(api, match.id);
+      if (v.status === 'mismatch') {
+        setError(`This API key does not belong to ${match.first_name} ${match.last_name || ''}. You can only sign in with the email of the account the key was copied from.`);
+        setMatch(null);
+        return;
+      }
+      if (v.status === 'unknown') {
+        setError(`Couldn't confirm that this key belongs to ${email.trim()}: the account has no tasks or time entries yet to check against. Log one time entry or create one task in the original application and then try again.`);
+        setMatch(null);
+        return;
+      }
+      settings.set({
+        baseUrl: normalised.url,
+        apiKey: key.trim(),
+        userEmail: email.trim(),
+        userId: match.id,
+        userName: `${match.first_name || ''} ${match.last_name || ''}`.trim(),
+        userInitials: match.initials || '',
+        userColor: match.profile_color || '',
+        identityVerified: true,
+      });
+      onClose?.();
+    } catch (err) { setError(friendlyError(err)); } finally { setBusy(false); }
   }
 
   return (
@@ -73,6 +88,7 @@ export default function SetupScreen({ initialStep = 1, onClose }) {
       <div className="setup-card">
         <div className="setup-brand"><Clock size={22} /> <span>Time Logger</span></div>
         <p className="muted">A simpler way to log time against your SpoofHub tasks. Two quick steps to connect.</p>
+        {notice && <p className="error-text">{notice}</p>}
 
         <ol className="steps">
           <li className={step === 1 ? 'active' : 'done'}>Connect</li>
@@ -123,8 +139,8 @@ export default function SetupScreen({ initialStep = 1, onClose }) {
                   <div className="muted small">{match.role_name || match.title || match.email}</div>
                 </div>
                 <div className="spacer" />
-                <button type="button" className="btn" onClick={() => setMatch(null)} title={tips.suNotMe}>Not me</button>
-                <button type="button" className="btn btn-primary" onClick={confirm} title={tips.suThatsMe}>That's me</button>
+                <button type="button" className="btn" disabled={busy} onClick={() => setMatch(null)} title={tips.suNotMe}>Not me</button>
+                <button type="button" className="btn btn-primary" disabled={busy} onClick={confirm} title={tips.suThatsMe}>{busy ? 'Verifying…' : "That's me"}</button>
               </div>
             ) : (
               <div className="actions">

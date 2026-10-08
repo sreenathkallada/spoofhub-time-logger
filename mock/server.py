@@ -77,7 +77,8 @@ class H(BaseHTTPRequestHandler):
             return self._json([out_task(t) for t in rows[start:start + limit]])
         if path.endswith('/alltime'):
             start = int(q.get('start', ['0'])[0]); fr = q.get('from_date', [''])[0]; to = q.get('to_date', ['9999'])[0]
-            rows = [e for e in alltime if (not fr or str(e.get('date', ''))[:10] >= fr) and str(e.get('date', ''))[:10] <= to]
+            uid = q.get('user_id', [''])[0]
+            rows = [dict(e, by_me=(str(e.get('creator', {}).get('id')) == str(ME))) for e in alltime if (not fr or str(e.get('date', ''))[:10] >= fr) and str(e.get('date', ''))[:10] <= to and (not uid or str(e.get('creator', {}).get('id')) == uid)]
             return self._json(rows[start:start + 100])
         if re.search(r'/projects/\d+/timesheets$', path): return self._json(timesheets)
         if re.search(r'/projects/\d+/todolists$', path): return self._json(todolists)

@@ -52,7 +52,14 @@ export default function MainScreen() {
 
   useEffect(() => {
     if (!tasks.data || !myTime.data) return;
-    if (!identityMismatch && !settings.identityVerified) settings.set({ identityVerified: true });
+    if (identityMismatch) {
+      // Never show another user's data: drop the session and go back to sign-in.
+      const base = settings.baseUrl;
+      useDrafts.getState().discardAll();
+      settings.signOut();
+      settings.set({ baseUrl: base });
+      settings.set({ signOutNotice: 'The API key stored in this browser does not belong to the account you signed in as. You have been signed out.' });
+    } else if (!settings.identityVerified) settings.set({ identityVerified: true });
   }, [tasks.data, myTime.data, identityMismatch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const authError = [projects, people, tasks, myTime].find((q) => q.error?.kind === 'auth')?.error;
@@ -88,12 +95,7 @@ export default function MainScreen() {
           Your API key was rejected by SpoofHub. <button className="btn-link" onClick={() => setReauth(true)}>Update key</button>
         </div>
       )}
-      {identityMismatch && (
-        <div className="banner banner-danger">
-          The API key belongs to a different user than the email you entered. Saving is blocked until you sign in again.{' '}
-          <button className="btn-link" onClick={() => setReauth(true)}>Sign in again</button>
-        </div>
-      )}
+
       {otherError && !authError && (
         <div className="banner banner-warn">Couldn't load from SpoofHub: {otherError.message}. <button className="btn-link" onClick={() => invalidate.all()}>Retry</button></div>
       )}

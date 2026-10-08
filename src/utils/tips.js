@@ -147,6 +147,6 @@ export const tips = {
   suShowKey: 'Show or hide the key while typing',
   suEmail: 'The email on your SpoofHub profile — used only to find your account',
   suNotMe: 'That is not my account — let me try another email',
-  suThatsMe: 'Use this account for logging time',
+  suThatsMe: 'Use this account. The app first checks that the API key really belongs to it.',
 };
 

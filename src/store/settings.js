@@ -12,6 +12,7 @@ export const useSettings = create(
       userInitials: '',
       userColor: '',
       identityVerified: false,
+      signOutNotice: '',
       defaultStatus: 'billable',
       daysOfHistory: 60,
       scope: 'mine+unassigned',
