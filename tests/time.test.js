@@ -87,3 +87,24 @@ describe('grid duration parsing and week helpers', () => {
   });
   it('formats cell hours', () => { expect(fmtCellHours(90)).toBe('1.5'); expect(fmtCellHours(0)).toBe(''); expect(fmtCellHours(45)).toBe('0.75'); });
 });
+
+import { decodeEntities, descriptionToHtml, descriptionText, looksLikeHtml, sameHtml } from '../src/utils/html.js';
+describe('description html', () => {
+  const raw = '&lt;div&gt;\n&lt;ul&gt;\n&lt;li&gt;&lt;input disabled="disabled" type="checkbox" aria-label="Design (SP: 3)" /&gt;&amp;nbsp;&lt;strong&gt;Design: model&lt;/strong&gt;&amp;nbsp;&amp;mdash; chose join-table&amp;nbsp;&lt;em&gt;(SP: 3)&lt;/em&gt;&lt;/li&gt;\n&lt;/ul&gt;\n&lt;/div&gt;';
+  it('decodes the escaped form once', () => {
+    const html = descriptionToHtml(raw);
+    expect(html.startsWith('<div>')).toBe(true);
+    expect(html).toContain('<strong>Design: model</strong>');
+    expect(html).toContain('&mdash;'); // inner entities stay as entities in the HTML (one decode only)
+  });
+  it('leaves real html untouched and plain text alone', () => {
+    expect(descriptionToHtml('<p>hi &amp; bye</p>')).toBe('<p>hi &amp; bye</p>');
+    expect(descriptionToHtml('plain a < b')).toBe('plain a < b');
+    expect(looksLikeHtml('plain')).toBe(false); expect(looksLikeHtml(raw)).toBe(true);
+  });
+  it('produces readable text', () => {
+    expect(descriptionText(raw)).toBe('• Design: model \u2014 chose join-table (SP: 3)');
+    expect(decodeEntities('a&amp;b&#8212;c&#x2014;d')).toBe('a&b\u2014c\u2014d');
+  });
+  it('compares ignoring whitespace', () => { expect(sameHtml('<p>a</p>\n', ' <p>a</p>')).toBe(true); });
+});

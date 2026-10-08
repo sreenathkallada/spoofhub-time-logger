@@ -5,8 +5,9 @@ import { useTodolists, useInvalidate, useLabels } from '../hooks/queries.js';
 import { api } from '../hooks/useApi.js';
 import { friendlyError } from '../api/errors.js';
 import { tips } from '../utils/tips.js';
+import RichEditor from './RichEditor.jsx';
+import { descriptionToHtml, serializeForSave, sameHtml } from '../utils/html.js';
 
-const stripHtml = (s) => String(s || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#039;/g, "'").trim();
 
 /** Create a task (no `task` prop) or edit an existing one (`task` given). */
 export default function TaskFormModal({ task, projects, peopleById, onClose, onCreated, onUpdated }) {
@@ -17,7 +18,8 @@ export default function TaskFormModal({ task, projects, peopleById, onClose, onC
   const [projectId, setProjectId] = useState(task ? String(task.project?.id) : (s.projectFilter || ''));
   const [listId, setListId] = useState(task ? String(task.list?.id) : '');
   const [title, setTitle] = useState(task?.title || '');
-  const [description, setDescription] = useState(task ? stripHtml(task.description) : '');
+  const originalHtml = task ? descriptionToHtml(task.description) : '';
+  const [description, setDescription] = useState(originalHtml);
   const [startDate, setStartDate] = useState(task?.start_date ? String(task.start_date).slice(0, 10) : '');
   const [dueDate, setDueDate] = useState(task?.due_date ? String(task.due_date).slice(0, 10) : '');
   const [estH, setEstH] = useState(task?.estimated_hours ?? '');
@@ -53,7 +55,8 @@ export default function TaskFormModal({ task, projects, peopleById, onClose, onC
     try {
       if (!editing) {
         const body = { title: title.trim() };
-        if (description.trim()) body.description = description.trim();
+        const descHtml = serializeForSave(description);
+        if (descHtml) body.description = descHtml;
         if (startDate) body.start_date = startDate;
         if (dueDate) body.due_date = dueDate;
         if (estH !== '' || estM !== '') { body.estimated_hours = Number(estH) || 0; body.estimated_mins = Number(estM) || 0; }
@@ -72,7 +75,8 @@ export default function TaskFormModal({ task, projects, peopleById, onClose, onC
         // send only what changed
         const body = {};
         if (title.trim() !== task.title) body.title = title.trim();
-        if (description.trim() !== stripHtml(task.description)) body.description = description.trim();
+        const descHtml = serializeForSave(description);
+        if (!sameHtml(descHtml, serializeForSave(originalHtml))) body.description = descHtml;
         if ((startDate || '') !== (task.start_date ? String(task.start_date).slice(0, 10) : '')) body.start_date = startDate || null;
         if ((dueDate || '') !== (task.due_date ? String(task.due_date).slice(0, 10) : '')) body.due_date = dueDate || null;
         const eh = Number(estH) || 0, em = Number(estM) || 0;
@@ -100,6 +104,7 @@ export default function TaskFormModal({ task, projects, peopleById, onClose, onC
           <button type="button" className="icon-btn" aria-label="Close" title={tips.close} onClick={onClose}><X size={18} /></button>
         </div>
 
+        <div className="modal-body">
         <div className="grid2">
           <label className="field" title={tips.ntProject}><span>Project</span>
             {editing ? <input value={task.project?.name || ''} disabled /> : (
@@ -121,9 +126,9 @@ export default function TaskFormModal({ task, projects, peopleById, onClose, onC
         <label className="field" title={tips.ntTitle}><span>Title</span>
           <input value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={250} placeholder="What needs doing" autoFocus={editing} />
         </label>
-        <label className="field" title={tips.ntDescription}><span>Description <em className="muted">optional{editing && /<[a-z][\s\S]*>/i.test(task.description || '') ? ' · formatting from SpoofHub is shown as plain text' : ''}</em></span>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
-        </label>
+        <div className="field" title={tips.ntDescription}><span>Description <em className="muted">optional</em></span>
+          <RichEditor value={description} onChange={setDescription} disabled={busy} />
+        </div>
         <div className="grid3">
           <label className="field" title={tips.ntStart}><span>Start date</span><input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} /></label>
           <label className="field" title={tips.ntDue}><span>Due date</span><input type="date" value={dueDate} min={startDate || undefined} onChange={(e) => setDueDate(e.target.value)} /></label>
@@ -176,8 +181,11 @@ export default function TaskFormModal({ task, projects, peopleById, onClose, onC
           {!assignMe && others.length === 0 && <p className="muted small">The task will be {editing ? 'left' : 'created'} unassigned.</p>}
         </fieldset>
 
-        {error && <p className="error-text">{error}</p>}
-        <div className="actions">
+        </div>
+
+        <div className="modal-foot">
+          {error && <p className="error-text">{error}</p>}
+          <div className="spacer" />
           <button type="button" className="btn" onClick={onClose} title={tips.close}>Cancel</button>
           <button className="btn btn-primary" title={editing ? tips.ntSave : tips.ntCreate} disabled={busy || !projectId || !listId || !title.trim()}>{busy ? (editing ? 'Saving…' : 'Creating…') : (editing ? 'Save changes' : 'Create task')}</button>
         </div>

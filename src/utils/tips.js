@@ -1,5 +1,6 @@
 // All tooltip text in one place. Functions take the values they describe.
 import { fmtDate, fmtDuration } from './time.js';
+import { descriptionText } from './html.js';
 
 export const tips = {
   // header
@@ -15,7 +16,7 @@ export const tips = {
 
   // task row
   chevron: (open) => (open ? 'Collapse this task' : 'Expand this task to see and log time'),
-  title: (t) => `${t.title}${t.ticket ? ` (#${t.ticket})` : ''}\nClick to expand and log time. Created ${fmtDate(t.created_at)}${t.updated_at ? `, last updated ${fmtDate(t.updated_at)}` : ''}.${t.description ? `\n\n${stripHtml(t.description)}` : ''}`,
+  title: (t) => `${t.title}${t.ticket ? ` (#${t.ticket})` : ''}\nClick to expand and log time. Created ${fmtDate(t.created_at)}${t.updated_at ? `, last updated ${fmtDate(t.updated_at)}` : ''}.${t.description ? `\n\n${descriptionText(t.description)}` : ''}`,
   ticket: (n) => `Ticket number #${n} — SpoofHub's short reference for this task`,
   projectDot: (name) => `Project colour for ${name}`,
   project: (name) => `Project: ${name}`,
@@ -121,7 +122,11 @@ export const tips = {
   ntProject: 'Project the task belongs to',
   ntList: 'Task list (todolist) inside the project',
   ntTitle: 'Short name of the task as it will appear in SpoofHub',
-  ntDescription: 'Longer details, optional',
+  ntDescription: 'Longer details, optional. Formatting, lists and checklists are kept in sync with SpoofHub.',
+  rtBold: 'Bold (Ctrl+B)', rtItalic: 'Italic (Ctrl+I)', rtBullets: 'Bulleted list', rtNumbers: 'Numbered list',
+  rtCheck: 'Checklist item — tick it off directly in the text; Enter adds another',
+  rtLink: 'Insert a link on the selected text', rtClear: 'Remove bold, italic and links from the selection',
+  rtArea: 'Task description. Tick checklist items here; everything is saved with the task.',
   ntStart: 'When work should start, optional',
   ntDue: 'When it should be finished, optional',
   ntEstimate: 'Expected effort in hours and minutes, optional',
@@ -145,6 +150,3 @@ export const tips = {
   suThatsMe: 'Use this account for logging time',
 };
 
-function stripHtml(s) {
-  return String(s).replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 300);
-}

@@ -32,6 +32,7 @@ export default function SettingsDialog({ onClose, onChangeAccount }) {
           <button type="button" className="icon-btn" aria-label="Close" title={tips.close} onClick={onClose}><X size={18} /></button>
         </div>
 
+        <div className="modal-body">
         <div className="match">
           <Avatar initials={s.userInitials} color={s.userColor} name={s.userName} />
           <div>
@@ -72,7 +73,8 @@ export default function SettingsDialog({ onClose, onChangeAccount }) {
         <p className="muted small" title={tips.stAddress}>Connected to <strong>{hostOf(s.baseUrl)}</strong> ({s.baseUrl}).</p>
         <p className="muted small">Your API key is stored only in this browser and sent only to that address. SpoofHub allows about 25 requests every 10 seconds per account; this app keeps under that and waits automatically when told to.</p>
 
-        <div className="actions">
+        </div>
+        <div className="modal-foot">
           <button className="btn btn-danger-outline" onClick={signOut} title={tips.stSignOut}>Sign out</button>
           <div className="spacer" />
           <button className="btn btn-primary" onClick={onClose} title={tips.done}>Done</button>

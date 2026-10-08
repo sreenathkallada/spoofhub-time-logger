@@ -18,6 +18,7 @@ Works with any SpoofHub account: each user enters their own SpoofHub address at 
 - **Add a comment** to a task from its expanded panel.
 - Create a task (project → task list → title, description, dates, estimate, assignees, labels, progress).
 - **Edit a task** assigned to you from the pencil on its row: the same fields, saved immediately. Rows show label tags and a progress bar.
+- Descriptions use a small rich-text editor (bold, italic, lists, checklists, links) that keeps the vendor's HTML, so checklists created in the web UI can be ticked off here and formatting survives a round trip. The API returns descriptions HTML-entity-escaped; `src/utils/html.js` decodes them once and sanitises against an allow-list.
 - Change a task's workflow stage from the list (only on tasks assigned to you). Stage changes are drafts sent with **Save all**; the last stage (marked ✓) completes the task.
 - Each person signs in with their SpoofHub address, their own API key and their email. Nothing is sent anywhere except that address.
 

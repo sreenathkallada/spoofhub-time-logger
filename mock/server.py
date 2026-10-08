@@ -2,7 +2,7 @@
 Loads fixture files from FIXTURES (defaults to ./fixtures). API key is 'testkey'.
 Run:  python3 mock/server.py   then sign in with address http://127.0.0.1:8787
 """
-import json, os, re, copy, datetime
+import json, os, re, copy, datetime, html as htmlmod
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
@@ -39,8 +39,13 @@ workflows = load('workflows.json', [{"id": 2370975710, "title": "3-stage Kanban 
     {"id": 6950484625, "title": "Backlog", "is_default": True}, {"id": 6950498194, "title": "In progress", "is_default": False}, {"id": 6950511762, "title": "Done", "is_default": True}]}])
 stage_titles = {str(st['id']): st['title'] for wf in workflows for st in wf.get('workflow_stages', [])}
 labels = load('labels.json', [{"id": 5688444941, "name": "Bug", "color": "#FF9800"}, {"id": 7793264607, "name": "Enhancement", "color": "#03A9F4"}, {"id": 7793183194, "name": "Feature", "color": "#E91E63"}])
+SAMPLE_DESC = '<div>\n<ul>\n<li><input disabled="disabled" type="checkbox" aria-label="Design: storage model &mdash; join-table (SP: 3)" />&nbsp;<strong>Design: storage model</strong>&nbsp;&mdash; join-table&nbsp;<em>(SP: 3)</em></li>\n<li><input disabled="disabled" type="checkbox" aria-label="Implement: many rituals per booking (SP: 5)" />&nbsp;<strong>Implement: many rituals per booking</strong>&nbsp;<em>(SP: 5)</em></li>\n</ul>\n</div>'
 for t in tasks:
-    if t['id'] == 900003: t['labels'] = [7793264607]; t['percent_progress'] = 40
+    if t['id'] == 900003: t['labels'] = [7793264607]; t['percent_progress'] = 40; t['description'] = SAMPLE_DESC
+def out_task(t):
+    o = dict(t)
+    if o.get('description'): o['description'] = htmlmod.escape(o['description'], quote=False)  # the real server returns it entity-escaped
+    return o
 KEY = 'testkey'; counter = [0]; log = []; FAIL_429_AT = {5}
 
 class H(BaseHTTPRequestHandler):
@@ -69,7 +74,7 @@ class H(BaseHTTPRequestHandler):
         if path.endswith('/alltodo'):
             start = int(q.get('start', ['0'])[0]); limit = int(q.get('limit', ['100'])[0]); rows = [t for t in tasks if not t.get('completed')]
             if 'projects' in q: rows = [t for t in rows if str(t['project']['id']) == q['projects'][0]]
-            return self._json(rows[start:start + limit])
+            return self._json([out_task(t) for t in rows[start:start + limit]])
         if path.endswith('/alltime'):
             start = int(q.get('start', ['0'])[0]); fr = q.get('from_date', [''])[0]; to = q.get('to_date', ['9999'])[0]
             rows = [e for e in alltime if (not fr or str(e.get('date', ''))[:10] >= fr) and str(e.get('date', ''))[:10] <= to]
@@ -118,7 +123,7 @@ class H(BaseHTTPRequestHandler):
                         sid = str(body['stage'])
                         if sid not in stage_titles: return self._json({"code": 1301, "message": "Invalid request", "response_code": 200})
                         t['stage'] = {'id': int(sid), 'name': stage_titles[sid]}  # deliberately does NOT auto-complete on the last stage
-                    return self._json(t)
+                    return self._json(out_task(t))
         self._json({"code": 1301, "message": "Invalid request", "response_code": 200})
     def do_DELETE(self):
         if not self._auth(): return
