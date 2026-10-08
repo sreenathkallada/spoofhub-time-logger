@@ -264,3 +264,56 @@ select[title] { cursor: pointer; }
 .stage-select.pending { border-color: var(--amber); color: var(--amber); background-color: var(--amber-soft); font-weight: 600; }
 .stage-select.failed { border-color: var(--red); color: var(--red); background-color: var(--red-soft); }
 .stage-arrow { font-size: 11px; color: var(--amber); }
+
+/* ---------- tabs ---------- */
+.tabs { display: flex; gap: 2px; margin-left: 18px; background: var(--grey-soft); border-radius: 999px; padding: 3px; }
+.tabs button { border: none; background: transparent; padding: 4px 14px; border-radius: 999px; font-size: 13px; color: var(--ink-2); cursor: pointer; }
+.tabs button.active { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(21,25,30,0.08); }
+.take { margin-left: 2px; display: inline-flex; align-items: center; gap: 3px; text-decoration: none; }
+
+/* ---------- week grid ---------- */
+.week { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.week-nav { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.week-title { font-weight: 600; margin-left: 6px; }
+.week-scroll { overflow-x: auto; }
+.week-grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.week-grid th, .week-grid td { border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); padding: 0; vertical-align: middle; }
+.week-grid th { background: var(--surface-2); font-weight: 600; font-size: 12px; color: var(--ink-2); text-align: center; padding: 8px 4px; }
+.week-grid th.wk-task, .week-grid td.wk-task { width: 34%; min-width: 220px; text-align: left; padding: 6px 10px; }
+.week-grid th .dow { display: block; }
+.week-grid th .dnum { display: block; font-size: 15px; color: var(--ink); }
+.week-grid th.today, .week-grid td.today { background: #f0fbf7; }
+.week-grid th.today .dnum { color: var(--accent); }
+.wk-title { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wk-sub { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--ink-3); flex-wrap: wrap; }
+.wk-total { width: 84px; text-align: right; padding: 0 10px !important; font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: 13px; }
+.wk-x { width: 36px; border-right: none !important; text-align: center; }
+.wk-cell { position: relative; }
+.wk-cell-inner { position: relative; }
+.wk-cell input { width: 100%; height: 44px; border: none; border-radius: 0; background: transparent; text-align: center; font-size: 15px; font-variant-numeric: tabular-nums; padding: 0 22px 0 8px; }
+.wk-cell input:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.wk-cell input::placeholder { color: var(--line-strong); }
+.wk-cell.pending { background: var(--amber-soft); }
+.wk-cell.pending input { color: var(--amber); font-weight: 600; }
+.wk-cell.invalid, .wk-cell.failed { background: var(--red-soft); }
+.wk-cell.invalid input, .wk-cell.failed input { color: var(--red); font-weight: 600; }
+.wk-cell.open { outline: 2px solid var(--accent); outline-offset: -2px; }
+.wk-cell.ro { text-align: center; color: var(--ink-3); font-size: 13px; }
+.wk-more { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border: none; background: transparent; color: var(--ink-3); border-radius: 4px; cursor: pointer; opacity: 0; display: inline-flex; align-items: center; justify-content: center; }
+.wk-cell:hover .wk-more, .wk-cell input:focus ~ .wk-more { opacity: 1; }
+.wk-more:hover { background: var(--grey-soft); color: var(--ink); }
+.wk-count { position: absolute; left: 4px; top: 3px; font-size: 10px; color: var(--ink-3); background: var(--grey-soft); border-radius: 999px; padding: 0 5px; }
+.week-grid tfoot td { background: var(--surface-2); font-weight: 600; font-size: 13px; text-align: center; padding: 8px 4px; font-variant-numeric: tabular-nums; }
+.week-grid tfoot td.wk-task { text-align: left; color: var(--ink-2); }
+.wk-foot.ok { color: var(--accent); }
+.wk-foot.under { color: var(--amber); }
+.wk-unlinked td { background: var(--surface-2); }
+.week .empty { padding: 28px; }
+.cell-pop { position: fixed; z-index: 45; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(880px, 94vw); max-height: 80vh; overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; box-shadow: 0 16px 48px rgba(21,25,30,0.22); }
+.cell-pop .existing, .cell-pop .entry-row { grid-template-columns: 140px 64px 64px minmax(120px, 1fr) 150px 110px 66px; }
+.picker input { margin-bottom: 8px; }
+.picker-list { max-height: 50vh; overflow: auto; display: flex; flex-direction: column; gap: 2px; }
+.picker-item { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 8px 10px; border: 1px solid transparent; border-radius: var(--radius); background: transparent; cursor: pointer; }
+.picker-item:hover, .picker-item:focus-visible { background: var(--surface-2); border-color: var(--line); }
+.comment-box { display: flex; gap: 8px; align-items: flex-start; }
+.comment-box textarea { flex: 1; }

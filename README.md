@@ -13,6 +13,9 @@ Works with any SpoofHub account: each user enters their own SpoofHub address at 
 - Edit or delete your existing entries inline.
 - Keep several tasks expanded with unsaved rows; the footer shows the total and one **Save all** pushes everything. Drafts survive a page refresh.
 - Respects SpoofHub's rate limit (25 requests / 10 s): it stays under it and waits automatically when told to. Failed rows stay editable so you can fix and re-save just those.
+- **Week grid**: a second tab showing Monday–Friday as columns and tasks as rows. Type hours (2, 1.5, 1:30, 1h 30m) straight into cells; several entries on one day open in a popover; day totals are coloured against your daily target (Settings); "Copy last week" pre-fills drafts; "Add task" adds any open task as a row.
+- **Take** an unassigned task (assigns it to you, with undo) from either view.
+- **Add a comment** to a task from its expanded panel.
 - Create a task (project → task list → title, dates, estimate, assignees).
 - Change a task's workflow stage from the list (only on tasks assigned to you). Stage changes are drafts sent with **Save all**; the last stage (marked ✓) completes the task.
 - Each person signs in with their SpoofHub address, their own API key and their email. Nothing is sent anywhere except that address.
@@ -61,7 +64,7 @@ All requests go through one queue (`src/api/queue.js`):
 
 SpoofHub sometimes returns errors as HTTP 200 with an error body (`{"success":false,"code":1001,...}` or `{"code":1301,"message":"Invalid request"}`); `src/api/client.js` detects these and treats them as errors.
 
-Requests made at startup: `/projects`, `/people`, `/workflows` (needs the `X-Comp-Url` header, which the app derives from the address), `/alltodo` (paged, 100 per request), `/alltime` (paged, last N days, N in Settings). Timesheets and task lists of a project are fetched the first time they're needed and cached.
+Requests also used: `PUT task {assigned}` (Take), `POST …/comments` (comments), `/alltime` with a date range for the week grid. Requests made at startup: `/projects`, `/people`, `/workflows` (needs the `X-Comp-Url` header, which the app derives from the address), `/alltodo` (paged, 100 per request), `/alltime` (paged, last N days, N in Settings). Timesheets and task lists of a project are fetched the first time they're needed and cached.
 
 ### Local testing without a real SpoofHub
 

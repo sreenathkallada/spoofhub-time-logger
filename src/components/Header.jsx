@@ -5,7 +5,7 @@ import Avatar from './Avatar.jsx';
 import { tips } from '../utils/tips.js';
 import { hostOf } from '../utils/baseUrl.js';
 
-export default function Header({ projects, search, onSearch, onRefresh, refreshing, onNewTask, onSettings, savingLocked, unlinkedMinutes }) {
+export default function Header({ projects, search, onSearch, onRefresh, refreshing, onNewTask, onSettings, savingLocked, unlinkedMinutes, tab, onTab }) {
   const s = useSettings();
   const myProjects = projects
     .filter((p) => !p.archived && !p.template)
@@ -17,6 +17,10 @@ export default function Header({ projects, search, onSearch, onRefresh, refreshi
     <header className="header">
       <div className="header-top">
         <div className="brand" title={tips.brand}><Clock size={20} /><span>Time Logger</span></div>
+        <nav className="tabs" aria-label="View">
+          <button className={tab === 'tasks' ? 'active' : ''} onClick={() => onTab('tasks')} title={tips.tabTasks}>Tasks</button>
+          <button className={tab === 'week' ? 'active' : ''} onClick={() => onTab('week')} title={tips.tabWeek}>Week</button>
+        </nav>
         <div className="spacer" />
         <button className="btn" onClick={onRefresh} disabled={refreshing || savingLocked} title={tips.refresh}>
           <RefreshCw size={15} className={refreshing ? 'spin' : ''} /> Refresh
@@ -26,7 +30,7 @@ export default function Header({ projects, search, onSearch, onRefresh, refreshi
           <Avatar initials={s.userInitials} color={s.userColor} name={s.userName} size={26} />
         </button>
       </div>
-      <div className="header-filters">
+      {tab === 'tasks' && <div className="header-filters">
         <select value={s.projectFilter} onChange={(e) => s.set({ projectFilter: e.target.value })} aria-label="Project" title={tips.projectFilter}>
           <option value="">All projects</option>
           {list.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
@@ -45,7 +49,7 @@ export default function Header({ projects, search, onSearch, onRefresh, refreshi
             {fmtMinutes(unlinkedMinutes)} not linked to tasks
           </span>
         )}
-      </div>
+      </div>}
     </header>
   );
 }

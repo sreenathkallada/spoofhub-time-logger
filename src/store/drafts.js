@@ -22,6 +22,15 @@ export const useDrafts = create(
       lastUsedTimesheet: {},
       expanded: [],
       completedIds: [], // tasks completed from this app, hidden until the server list catches up (not persisted)
+      weekRows: {}, // weekStartISO -> [{ id, meta }]: tasks added to the week grid by hand
+      addWeekRow: (weekKey, id, meta) =>
+        set((s) => {
+          const rows = s.weekRows[weekKey] || [];
+          if (rows.some((r) => String(r.id) === String(id))) return {};
+          return { weekRows: { ...s.weekRows, [weekKey]: [...rows, { id: String(id), meta }] } };
+        }),
+      removeWeekRow: (weekKey, id) =>
+        set((s) => ({ weekRows: { ...s.weekRows, [weekKey]: (s.weekRows[weekKey] || []).filter((r) => String(r.id) !== String(id)) } })),
       markCompleted: (taskId, on) =>
         set((s) => ({ completedIds: on ? [...new Set([...s.completedIds, String(taskId)])] : s.completedIds.filter((x) => x !== String(taskId)) })),
 
@@ -48,9 +57,9 @@ export const useDrafts = create(
           const row = {
             uid: uid(),
             date: seed.date ?? prev?.date ?? todayISO(),
-            hours: '',
-            mins: '',
-            description: '',
+            hours: seed.hours ?? '',
+            mins: seed.mins ?? '',
+            description: seed.description ?? '',
             timesheetId: seed.timesheetId ?? prev?.timesheetId ?? '',
             status: seed.status ?? prev?.status ?? 'billable',
             state: 'idle',
@@ -170,6 +179,6 @@ export const useDrafts = create(
         })),
       hasDraftsFor: (taskId) => hasMeaningfulDrafts(get().drafts[taskId]),
     }),
-    { name: 'phtl.drafts', version: 1, partialize: (s) => ({ drafts: s.drafts, lastUsedTimesheet: s.lastUsedTimesheet, expanded: s.expanded }) },
+    { name: 'phtl.drafts', version: 1, partialize: (s) => ({ drafts: s.drafts, lastUsedTimesheet: s.lastUsedTimesheet, expanded: s.expanded, weekRows: s.weekRows }) },
   ),
 );

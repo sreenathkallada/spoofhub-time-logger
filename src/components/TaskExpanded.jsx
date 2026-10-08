@@ -1,4 +1,7 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { api } from '../hooks/useApi.js';
+import { friendlyError } from '../api/errors.js';
+import { useToast } from './Toast.jsx';
 import { Plus } from 'lucide-react';
 import { useDrafts } from '../store/drafts.js';
 import { useSettings } from '../store/settings.js';
@@ -16,6 +19,9 @@ export default function TaskExpanded({ task, draft, myEntries, myTimeLoading, sa
   const defaultStatus = useSettings((s) => s.defaultStatus);
   const timesheets = useTimesheets(projectId);
   const lastUsed = useDrafts((s) => s.lastUsedTimesheet);
+  const toast = useToast();
+  const [comment, setComment] = useState('');
+  const [posting, setPosting] = useState(false);
 
   const meta = useMemo(() => ({
     title: task.title, projectId, projectName: task.project?.name, listId: task.list?.id, listName: task.list?.name,
@@ -48,6 +54,18 @@ export default function TaskExpanded({ task, draft, myEntries, myTimeLoading, sa
     }
   }, [timesheets.usable]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  async function postComment() {
+    const text = comment.trim();
+    if (!text || posting) return;
+    setPosting(true);
+    try {
+      await api.addComment(projectId, task.list?.id, task.id, text);
+      setComment('');
+      toast({ message: 'Comment posted', tone: 'success' });
+    } catch (err) { toast({ message: `Couldn't post comment: ${friendlyError(err)}`, tone: 'danger', ttl: 8000 }); }
+    finally { setPosting(false); }
+  }
+
   const subtotal = newEntries.filter((r) => r.state !== 'saved' && isValidEntry(r)).reduce((s, r) => s + toMinutes(r.hours, r.mins), 0);
   const noTimesheets = timesheets.isSuccess && timesheets.usable.length === 0;
 
@@ -72,6 +90,17 @@ export default function TaskExpanded({ task, draft, myEntries, myTimeLoading, sa
           />
         ))}
       </section>
+
+      {!task.orphan && (
+        <section>
+          <div className="section-title" title={tips.commentBox}>Add a comment</div>
+          <div className="comment-box">
+            <textarea rows={2} value={comment} maxLength={2000} disabled={posting} placeholder="Note for the team on this task…" title={tips.commentBox}
+              onChange={(e) => setComment(e.target.value)} onKeyDown={(e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') postComment(); }} />
+            <button className="btn btn-small" disabled={posting || !comment.trim()} title={tips.commentPost} onClick={postComment}>{posting ? 'Posting…' : 'Post comment'}</button>
+          </div>
+        </section>
+      )}
 
       <section>
         <div className="section-title" title={tips.newHeader}>New entries</div>

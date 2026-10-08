@@ -73,3 +73,17 @@ describe('base url normalisation', () => {
 describe('base url rejects hosts with spaces', () => {
   it('rejects', () => { expect(normaliseBaseUrl('not a url').error).toBeTruthy(); expect(normaliseBaseUrl('https://bad host.com').error).toBeTruthy(); expect(normaliseBaseUrl('[::1]:8787').url).toBe('https://[::1]:8787/api/v3/'); });
 });
+
+import { parseDuration, weekStartISO, weekDaysISO, fmtCellHours } from '../src/utils/time.js';
+describe('grid duration parsing and week helpers', () => {
+  it('parses durations', () => {
+    expect(parseDuration('2')).toBe(120); expect(parseDuration('1.5')).toBe(90); expect(parseDuration('1,5')).toBe(90);
+    expect(parseDuration('1:30')).toBe(90); expect(parseDuration('1h 30m')).toBe(90); expect(parseDuration('45m')).toBe(45);
+    expect(parseDuration('2h')).toBe(120); expect(parseDuration('')).toBe(0); expect(parseDuration('abc')).toBeNull();
+  });
+  it('finds Monday and lists weekdays', () => {
+    expect(weekStartISO('2026-10-07')).toBe('2026-10-05'); expect(weekStartISO('2026-10-05')).toBe('2026-10-05'); expect(weekStartISO('2026-10-11')).toBe('2026-10-05');
+    expect(weekDaysISO('2026-10-05')).toEqual(['2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08', '2026-10-09']);
+  });
+  it('formats cell hours', () => { expect(fmtCellHours(90)).toBe('1.5'); expect(fmtCellHours(0)).toBe(''); expect(fmtCellHours(45)).toBe('0.75'); });
+});

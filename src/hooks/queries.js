@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueries, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { api } from './useApi.js';
 import { useSettings } from '../store/settings.js';
@@ -68,6 +68,31 @@ export function useMyTime(enabled = true) {
     return { byTask: m, unlinkedMinutes: unlinked };
   }, [q.data]);
   return { ...q, ...byTask };
+}
+
+/** Your entries between two ISO dates (inclusive), for the week grid. */
+export function useTimeRange(from, to, enabled = true) {
+  const userId = useSettings((s) => s.userId);
+  return useQuery({
+    queryKey: ['mytime', 'range', userId, from, to],
+    queryFn: () => api.getMyTime({ userId, from, to }),
+    staleTime: 2 * MIN,
+    enabled: enabled && Boolean(userId && from && to),
+  });
+}
+
+/** Usable timesheets for several projects at once: { [projectId]: Timesheet[] } plus a loading flag. */
+export function useProjectTimesheets(projectIds) {
+  const userId = useSettings((s) => s.userId);
+  const ids = useMemo(() => [...new Set((projectIds || []).filter(Boolean).map(String))].sort(), [projectIds]);
+  const results = useQueries({
+    queries: ids.map((pid) => ({ queryKey: ['timesheets', Number(pid) || pid], queryFn: () => api.getTimesheets(pid), staleTime: 30 * MIN })),
+  });
+  return useMemo(() => {
+    const m = {};
+    ids.forEach((pid, i) => { m[pid] = usableTimesheets(results[i].data, userId); });
+    return { byProject: m, loading: results.some((r) => r.isLoading) };
+  }, [ids, results, userId]);
 }
 
 export function useTimesheets(projectId, enabled = true) {

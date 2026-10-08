@@ -60,7 +60,7 @@ export default function NewTaskModal({ projects, peopleById, onClose, onCreated 
       <form className="modal" onSubmit={submit} role="dialog" aria-modal="true" aria-labelledby="nt-title">
         <div className="modal-head">
           <h2 id="nt-title">New task</h2>
-          <button type="button" className="icon-btn" aria-label="Close" onClick={onClose}><X size={18} /></button>
+          <button type="button" className="icon-btn" aria-label="Close" title={tips.close} onClick={onClose}><X size={18} /></button>
         </div>
 
         <div className="grid2">
@@ -111,7 +111,7 @@ export default function NewTaskModal({ projects, peopleById, onClose, onCreated 
 
         {error && <p className="error-text">{error}</p>}
         <div className="actions">
-          <button type="button" className="btn" onClick={onClose}>Cancel</button>
+          <button type="button" className="btn" onClick={onClose} title={tips.close}>Cancel</button>
           <button className="btn btn-primary" title={tips.ntCreate} disabled={busy || !projectId || !listId || !title.trim()}>{busy ? 'Creating…' : 'Create task'}</button>
         </div>
       </form>

@@ -29,7 +29,7 @@ export default function SettingsDialog({ onClose, onChangeAccount }) {
       <div className="modal" role="dialog" aria-modal="true" aria-labelledby="st-title">
         <div className="modal-head">
           <h2 id="st-title">Settings</h2>
-          <button type="button" className="icon-btn" aria-label="Close" onClick={onClose}><X size={18} /></button>
+          <button type="button" className="icon-btn" aria-label="Close" title={tips.close} onClick={onClose}><X size={18} /></button>
         </div>
 
         <div className="match">
@@ -57,13 +57,25 @@ export default function SettingsDialog({ onClose, onChangeAccount }) {
           </label>
         </div>
 
+        <div className="grid2">
+          <label className="field" title={tips.stTarget}><span>Daily target (hours)</span>
+            <input type="number" min="0" max="24" step="0.5" value={Math.round((s.dailyTargetMins || 0) / 60 * 100) / 100} onChange={(e) => s.set({ dailyTargetMins: Math.round((Number(e.target.value) || 0) * 60) })} />
+          </label>
+          <label className="field" title={tips.stDefaultTab}><span>Open on</span>
+            <select value={s.defaultTab || 'tasks'} onChange={(e) => s.set({ defaultTab: e.target.value })}>
+              <option value="tasks">Task list</option>
+              <option value="week">Week grid</option>
+            </select>
+          </label>
+        </div>
+
         <p className="muted small" title={tips.stAddress}>Connected to <strong>{hostOf(s.baseUrl)}</strong> ({s.baseUrl}).</p>
         <p className="muted small">Your API key is stored only in this browser and sent only to that address. SpoofHub allows about 25 requests every 10 seconds per account; this app keeps under that and waits automatically when told to.</p>
 
         <div className="actions">
           <button className="btn btn-danger-outline" onClick={signOut} title={tips.stSignOut}>Sign out</button>
           <div className="spacer" />
-          <button className="btn btn-primary" onClick={onClose}>Done</button>
+          <button className="btn btn-primary" onClick={onClose} title={tips.done}>Done</button>
         </div>
       </div>
     </div>

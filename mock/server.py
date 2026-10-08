@@ -2,7 +2,7 @@
 Loads fixture files from FIXTURES (defaults to ./fixtures). API key is 'testkey'.
 Run:  python3 mock/server.py   then sign in with address http://127.0.0.1:8787
 """
-import json, os, re, copy
+import json, os, re, copy, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
@@ -24,7 +24,12 @@ for i in range(1, 8):
 timesheets = load('timesheets.json', [{"id": 10471199627, "title": "Coding", "archived": False, "private": False, "assigned": []}, {"id": 10476260757, "title": "Interviews", "archived": False, "private": False, "assigned": []}])
 todolists = load('todolists.json', [{"id": 270715557486, "title": "Hiring Operations", "archived": False}, {"id": 270700564057, "title": "Meetings Training", "archived": False}])
 alltime = load('alltime.json', [])
-alltime.append({"by_me": True, "id": 777001, "status": "billable", "description": "Reproduced the bug", "date": "2026-09-18", "logged_hours": 1, "logged_mins": 15,
+_today = datetime.date.today(); MONDAY = (_today - datetime.timedelta(days=_today.weekday())).isoformat()
+LAST_TUE = (_today - datetime.timedelta(days=_today.weekday() + 6)).isoformat()
+alltime.append({"by_me": True, "id": 777002, "status": "billable", "description": "Last week's work", "date": LAST_TUE, "logged_hours": 3, "logged_mins": 0,
+                "timesheet": {"id": 10476260757, "title": "Interviews"}, "task": {"list_id": 270715557486, "list_name": "Hiring Operations", "task_id": 900003, "task_name": "Synthetic task 3"},
+                "project": {"id": 9533994962, "name": "Organizational Activities"}, "creator": {"id": ME}})
+alltime.append({"by_me": True, "id": 777001, "status": "billable", "description": "Reproduced the bug", "date": MONDAY, "logged_hours": 1, "logged_mins": 15,
                 "timesheet": {"id": 10471199627, "title": "Coding"}, "task": {"list_id": 270715557486, "list_name": "Hiring Operations", "task_id": 900001, "task_name": "Synthetic task 1"},
                 "project": {"id": 9533994962, "name": "Organizational Activities"}, "creator": {"id": ME}})
 projects = [{"id": 9580929145, "title": "FC - FamNme Backend/Admin", "archived": False, "color": "#03A9F4", "assigned": [ME], "template": False},
@@ -62,7 +67,9 @@ class H(BaseHTTPRequestHandler):
             if 'projects' in q: rows = [t for t in rows if str(t['project']['id']) == q['projects'][0]]
             return self._json(rows[start:start + limit])
         if path.endswith('/alltime'):
-            start = int(q.get('start', ['0'])[0]); return self._json(alltime[start:start + 100])
+            start = int(q.get('start', ['0'])[0]); fr = q.get('from_date', [''])[0]; to = q.get('to_date', ['9999'])[0]
+            rows = [e for e in alltime if (not fr or str(e.get('date', ''))[:10] >= fr) and str(e.get('date', ''))[:10] <= to]
+            return self._json(rows[start:start + 100])
         if re.search(r'/projects/\d+/timesheets$', path): return self._json(timesheets)
         if re.search(r'/projects/\d+/todolists$', path): return self._json(todolists)
         self._json({"code": 1301, "message": "Invalid request", "response_code": 200})
@@ -77,6 +84,9 @@ class H(BaseHTTPRequestHandler):
             e = {"id": 800000 + counter[0], "status": body.get('status'), "description": body.get('description'), "date": body.get('date'), "logged_hours": body.get('logged_hours'), "logged_mins": body.get('logged_mins'),
                  "timesheet": {"id": body.get('timesheet_id')}, "task": {"task_id": body.get('task_id'), "list_id": body.get('list_id')}, "project": {"id": body.get('project')}, "creator": {"id": ME}, "by_me": True}
             alltime.append(e); return self._json(e)
+        if re.search(r'/tasks/\d+/comments$', path):
+            if not body.get('description'): return self._json({"code": 1301, "message": "Invalid request", "response_code": 200})
+            return self._json({"id": 600000 + counter[0], "description": body['description'], "creator": {"id": ME}, "created_at": "2026-10-07T10:00:00+00:00"})
         m = re.search(r'/projects/(\d+)/todolists/(\d+)/tasks$', path)
         if m:
             t = copy.deepcopy(base_task); t.update(id=950000 + counter[0], ticket=str(40000 + counter[0]), title=body.get('title'), assigned=body.get('assigned', []), logged_hours=None, logged_mins=None, by_me=True, creator={'id': ME}, completed=False)
@@ -96,6 +106,7 @@ class H(BaseHTTPRequestHandler):
             for t in tasks:
                 if str(t['id']) == m.group(1):
                     if 'completed' in body: t['completed'] = body['completed']
+                    if 'assigned' in body: t['assigned'] = body['assigned']
                     if 'stage' in body:
                         sid = str(body['stage'])
                         if sid not in stage_titles: return self._json({"code": 1301, "message": "Invalid request", "response_code": 200})

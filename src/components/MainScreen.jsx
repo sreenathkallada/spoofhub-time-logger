@@ -6,6 +6,7 @@ import { useSaveAll, usePendingSummary } from '../hooks/useSaveAll.js';
 import { useToast } from './Toast.jsx';
 import Header from './Header.jsx';
 import TaskList from './TaskList.jsx';
+import WeekView from './WeekView.jsx';
 import SaveBar from './SaveBar.jsx';
 import NewTaskModal from './NewTaskModal.jsx';
 import SettingsDialog from './SettingsDialog.jsx';
@@ -19,6 +20,7 @@ export default function MainScreen() {
   const [showSettings, setShowSettings] = useState(false);
   const [reauth, setReauth] = useState(false);
   const [search, setSearch] = useState('');
+  const [tab, setTab] = useState(() => useSettings.getState().defaultTab || 'tasks');
   const [online, setOnline] = useState(navigator.onLine);
 
   const projects = useProjects();
@@ -75,6 +77,8 @@ export default function MainScreen() {
         onSettings={() => setShowSettings(true)}
         savingLocked={save.running}
         unlinkedMinutes={myTime.unlinkedMinutes}
+        tab={tab}
+        onTab={setTab}
       />
 
       {!online && <div className="banner banner-warn">You're offline. Drafts are kept; saving resumes when you're back.</div>}
@@ -94,7 +98,8 @@ export default function MainScreen() {
       )}
 
       <main className="content">
-        <TaskList
+        {tab === 'week' && <WeekView tasks={tasks.data} saving={save.running} />}
+        {tab === 'tasks' && <TaskList
           tasks={tasks.data}
           loading={tasks.isLoading}
           search={search}
@@ -103,7 +108,7 @@ export default function MainScreen() {
           myTimeByTask={myTime.byTask}
           myTimeLoading={myTime.isLoading}
           saving={save.running}
-        />
+        />}
       </main>
 
       <SaveBar

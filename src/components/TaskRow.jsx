@@ -9,6 +9,8 @@ import { fmtDuration, fmtDate, isOverdue, isValidEntry, toMinutes } from '../uti
 import { useToast } from './Toast.jsx';
 import TaskExpanded from './TaskExpanded.jsx';
 import { tips } from '../utils/tips.js';
+import { Hand } from 'lucide-react';
+import { useTakeTask } from '../hooks/useTakeTask.js';
 
 function draftCounts(d) {
   if (!d) return { pending: 0, failed: 0, saving: 0 };
@@ -30,6 +32,7 @@ export default function TaskRow({ task, expanded, draft, projectColor, workflow,
   const toggleExpanded = useDrafts((s) => s.toggleExpanded);
   const markCompleted = useDrafts((s) => s.markCompleted);
   const setStageChange = useDrafts((s) => s.setStageChange);
+  const take = useTakeTask();
   const userId = useSettings((s) => s.userId);
   const toast = useToast();
   const invalidate = useInvalidate();
@@ -99,6 +102,7 @@ export default function TaskRow({ task, expanded, draft, projectColor, workflow,
             <span className="title-text" title={tips.title(task)}>{task.title}</span>
             {task.ticket && <span className="ticket" title={tips.ticket(task.ticket)}>#{task.ticket}</span>}
             {unassigned && <span className="badge badge-amber" title={tips.unassigned}>Unassigned</span>}
+            {unassigned && <button className="btn-link small take" disabled={saving} title={tips.take} onClick={(e) => { e.stopPropagation(); take(task); }}><Hand size={12} /> Take</button>}
           </div>
           <div className="task-sub">
             <span title={tips.project(task.project?.name)}>{task.project?.name}</span>

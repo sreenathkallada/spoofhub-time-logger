@@ -16,6 +16,8 @@ export const useSettings = create(
       daysOfHistory: 60,
       scope: 'mine+unassigned',
       projectFilter: '',
+      dailyTargetMins: 480,
+      defaultTab: 'tasks', // 'tasks' | 'week'
       set: (patch) => set(patch),
       signOut: () =>
         set({ baseUrl: '', apiKey: '', userEmail: '', userId: null, userName: '', userInitials: '', userColor: '', identityVerified: false }),

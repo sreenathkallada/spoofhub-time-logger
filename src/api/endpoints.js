@@ -37,6 +37,10 @@ export function makeApi(getKey, getBase) {
       post(`projects/${projectId}/todolists/${listId}/tasks`, body, { priority: 'high', ...opts }),
     setTaskCompleted: (projectId, listId, taskId, completed, opts) =>
       put(`projects/${projectId}/todolists/${listId}/tasks/${taskId}`, { completed }, { priority: 'high', ...opts }),
+    assignTask: (projectId, listId, taskId, assigned, opts) =>
+      put(`projects/${projectId}/todolists/${listId}/tasks/${taskId}`, { assigned }, { priority: 'high', ...opts }),
+    addComment: (projectId, listId, taskId, description, opts) =>
+      post(`projects/${projectId}/todolists/${listId}/tasks/${taskId}/comments`, { description }, { priority: 'high', ...opts }),
     setTaskStage: (projectId, listId, taskId, stageId, opts) =>
       put(`projects/${projectId}/todolists/${listId}/tasks/${taskId}`, { stage: Number(stageId) || stageId }, opts),
 
@@ -44,7 +48,7 @@ export function makeApi(getKey, getBase) {
     getMyTime: ({ userId, from, to }, opts) =>
       paged('alltime', { user_id: userId, from_date: from, to_date: to, order_by: 'desc' }, { priority: 'high', ...opts }),
     createTime: (projectId, timesheetId, body, opts) =>
-      post(`projects/${projectId}/timesheets/${timesheetId}/time`, { project: projectId, timesheet_id: timesheetId, ...body }, opts),
+      post(`projects/${projectId}/timesheets/${timesheetId}/time`, { project: Number(projectId) || projectId, timesheet_id: Number(timesheetId) || timesheetId, ...body }, opts),
     updateTime: (projectId, timesheetId, entryId, body, opts) =>
       put(`projects/${projectId}/timesheets/${timesheetId}/time/${entryId}`, body, opts),
     deleteTime: (projectId, timesheetId, entryId, opts) =>

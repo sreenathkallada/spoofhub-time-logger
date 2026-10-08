@@ -60,3 +60,44 @@ export function validateEntry(e) {
 }
 
 export const isValidEntry = (e) => Object.keys(validateEntry(e)).length === 0;
+
+/**
+ * Parse a duration typed into a grid cell. Accepts "2", "1.5", "1:30", "1h 30m", "90m", "2h".
+ * Returns whole minutes, 0 for empty, or null when unreadable.
+ */
+export function parseDuration(text) {
+  const s = String(text ?? '').trim().toLowerCase().replace(/,/g, '.');
+  if (!s) return 0;
+  let m;
+  if ((m = s.match(/^(\d{1,2}):(\d{1,2})$/))) return Number(m[1]) * 60 + Number(m[2]);
+  if ((m = s.match(/^(?:(\d+(?:\.\d+)?)\s*h)?\s*(?:(\d+)\s*m)?$/)) && (m[1] || m[2])) {
+    return Math.round((Number(m[1] || 0)) * 60) + Number(m[2] || 0);
+  }
+  if ((m = s.match(/^(\d+(?:\.\d+)?)$/))) return Math.round(Number(m[1]) * 60);
+  return null;
+}
+
+/** Monday of the week containing the given ISO date. */
+export function weekStartISO(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  const dow = (dt.getDay() + 6) % 7; // Monday = 0
+  return addDaysISO(iso, -dow);
+}
+
+/** Mon..Fri ISO dates for the week starting at startISO. */
+export const weekDaysISO = (startISO, count = 5) => Array.from({ length: count }, (_, i) => addDaysISO(startISO, i));
+
+const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+export function fmtDayHeader(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return { dow: DOW[(dt.getDay() + 6) % 7], day: d, month: MONTHS[m - 1] };
+}
+
+/** Cell text for a minute total: "2", "1.5", "0.75" — hours with up to two decimals. */
+export function fmtCellHours(mins) {
+  if (!mins) return '';
+  const h = mins / 60;
+  return (Math.round(h * 100) / 100).toString();
+}

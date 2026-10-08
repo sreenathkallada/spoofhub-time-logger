@@ -35,6 +35,41 @@ export const tips = {
   badgePending: (n) => `${n} unsaved ${n === 1 ? 'entry' : 'entries'} on this task. Press Save all to send them.`,
   complete: (title) => `Mark "${title}" complete in SpoofHub. It leaves this list; you can undo for a few seconds.`,
 
+  // week view
+  tabTasks: 'Task list: expand a task to log time, change stages, add comments',
+  tabWeek: 'Week grid: type hours per task per day for the whole week at once',
+  weekPrev: 'Previous week', weekNext: 'Next week', weekThis: 'Jump to the current week',
+  weekTitle: 'The Monday–Friday week shown in the grid',
+  weekTotal: (target) => `Hours in this week across all tasks${target ? `, against ${Math.round(target / 60 * 100) / 100}h per day × 5 (set the daily target in Settings)` : ''}`,
+  copyLastWeek: 'Create draft rows for this week from last week\'s entries (same tasks, durations and timesheets, no descriptions). Nothing is saved until you press Save all.',
+  addTaskRow: 'Add an open task as a row so you can type hours against it',
+  weekTaskCol: 'One row per task. Rows appear when a task has time this week, or when you add it.',
+  weekDay: (iso, isToday) => `${fmtDate(iso)}${isToday ? ' — today' : ''}. Type hours into the cells below.`,
+  weekRowTotal: 'Hours on this task in the shown week',
+  weekRowTask: (t) => `${t.title}${t.ticket ? ` (#${t.ticket})` : ''}\n${t.project?.name || ''}${t.list?.name ? ` / ${t.list.name}` : ''}`,
+  weekStub: 'This task is no longer in your open list (completed, reassigned or filtered), but you logged time on it this week',
+  take: 'Assign this task to yourself in SpoofHub so you can change its stage. You can undo for a few seconds.',
+  removeRow: 'Remove this row from the grid (it has no entries)',
+  removeRowCol: 'Rows you added by hand can be removed here while they have no entries',
+  close: 'Close',
+  done: 'Close settings; changes apply immediately',
+  weekUnlinked: 'Time logged straight to a timesheet without a task. Shown for completeness; it cannot be edited here.',
+  weekDayTotal: (target) => `Hours per day across all rows${target ? ` — green when at or above your ${Math.round(target / 60 * 100) / 100}h target, amber below` : ''}`,
+  weekDayTotalCell: (mins, target) => `${fmtDuration(0, mins)} logged${target ? ` of ${fmtDuration(0, target)} target` : ''}`,
+  weekCell: (data, day, multi) => multi
+    ? `${data.count} entries totalling ${fmtDuration(0, data.total)} on ${fmtDate(day)}. Click to see and edit them.`
+    : `Hours on ${fmtDate(day)}. Type 2, 1.5, 1:30 or 1h 30m; clear to remove. ${data.pending ? 'Unsaved — press Save all.' : ''}${data.invalid ? ' Incomplete: open the details to choose a timesheet.' : ''}${data.failed ? ' Last save failed; open the details.' : ''}`,
+  weekCellMore: 'Open the entries for this cell: descriptions, timesheet, status, several entries per day',
+  weekCellMulti: (n) => `${n} entries in this cell`,
+  pickerSearch: 'Type to filter your open tasks',
+  pickerItem: (t, mine) => `Add "${t.title}" to the week${mine ? '' : ' (not assigned to you — you can still log time on it)'}`,
+  // comments
+  commentBox: 'Write a comment on this task. It is posted to SpoofHub immediately when you press Post.',
+  commentPost: 'Post this comment to the task now',
+  // settings
+  stTarget: 'Expected hours per working day. The week grid colours day totals against it.',
+  stDefaultTab: 'Which view opens first: the task list or the week grid',
+
   // expanded task
   existingHeader: (days) => `Time entries you logged on this task in the last ${days} days`,
   newHeader: 'Rows you are about to save. Fill in a duration and press Save all.',
