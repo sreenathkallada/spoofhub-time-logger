@@ -28,6 +28,7 @@ export function makeApi(getKey, getBase) {
   return {
     getPeople: (opts) => get('people', null, { priority: 'high', ...opts }),
     getProjects: (opts) => get('projects', null, { priority: 'high', ...opts }),
+    getLabels: (opts) => get('labels', null, { priority: 'high', ...opts }),
     getWorkflows: (opts) => get('workflows', { limit: 100 }, { priority: 'high', ...opts }),
 
     getOpenTasks: ({ projectId } = {}, opts) =>
@@ -37,6 +38,8 @@ export function makeApi(getKey, getBase) {
       post(`projects/${projectId}/todolists/${listId}/tasks`, body, { priority: 'high', ...opts }),
     setTaskCompleted: (projectId, listId, taskId, completed, opts) =>
       put(`projects/${projectId}/todolists/${listId}/tasks/${taskId}`, { completed }, { priority: 'high', ...opts }),
+    updateTask: (projectId, listId, taskId, body, opts) =>
+      put(`projects/${projectId}/todolists/${listId}/tasks/${taskId}`, body, { priority: 'high', ...opts }),
     assignTask: (projectId, listId, taskId, assigned, opts) =>
       put(`projects/${projectId}/todolists/${listId}/tasks/${taskId}`, { assigned }, { priority: 'high', ...opts }),
     addComment: (projectId, listId, taskId, description, opts) =>

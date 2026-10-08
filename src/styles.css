@@ -317,3 +317,15 @@ select[title] { cursor: pointer; }
 .picker-item:hover, .picker-item:focus-visible { background: var(--surface-2); border-color: var(--line); }
 .comment-box { display: flex; gap: 8px; align-items: flex-start; }
 .comment-box textarea { flex: 1; }
+
+/* ---------- labels & progress ---------- */
+.label-tag { display: inline-block; padding: 0 7px; border-radius: 999px; font-size: 11px; font-weight: 600; line-height: 1.7; white-space: nowrap; color: var(--chip); background: color-mix(in srgb, var(--chip) 14%, white); border: 1px solid color-mix(in srgb, var(--chip) 35%, white); }
+.label-picker { display: flex; flex-wrap: wrap; gap: 6px; }
+.label-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; cursor: pointer; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink-2); }
+.label-chip.on { color: var(--chip); background: color-mix(in srgb, var(--chip) 14%, white); border-color: color-mix(in srgb, var(--chip) 50%, white); font-weight: 600; }
+.task-progress { display: flex; align-items: center; gap: 6px; width: 92px; flex: none; }
+.task-progress .bar { flex: 1; height: 5px; border-radius: 3px; background: var(--grey-soft); overflow: hidden; }
+.task-progress .fill { height: 100%; background: var(--accent); }
+.task-progress .pct { font-size: 11px; color: var(--ink-3); width: 30px; text-align: right; font-variant-numeric: tabular-nums; }
+.edit-task { flex: none; }
+input[type="range"] { flex: 1; height: var(--control-h); padding: 0; border: none; accent-color: var(--accent); }

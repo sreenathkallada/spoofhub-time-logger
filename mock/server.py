@@ -38,6 +38,9 @@ projects = [{"id": 9580929145, "title": "FC - FamNme Backend/Admin", "archived":
 workflows = load('workflows.json', [{"id": 2370975710, "title": "3-stage Kanban workflow", "is_default": True, "workflow_stages": [
     {"id": 6950484625, "title": "Backlog", "is_default": True}, {"id": 6950498194, "title": "In progress", "is_default": False}, {"id": 6950511762, "title": "Done", "is_default": True}]}])
 stage_titles = {str(st['id']): st['title'] for wf in workflows for st in wf.get('workflow_stages', [])}
+labels = load('labels.json', [{"id": 5688444941, "name": "Bug", "color": "#FF9800"}, {"id": 7793264607, "name": "Enhancement", "color": "#03A9F4"}, {"id": 7793183194, "name": "Feature", "color": "#E91E63"}])
+for t in tasks:
+    if t['id'] == 900003: t['labels'] = [7793264607]; t['percent_progress'] = 40
 KEY = 'testkey'; counter = [0]; log = []; FAIL_429_AT = {5}
 
 class H(BaseHTTPRequestHandler):
@@ -59,6 +62,7 @@ class H(BaseHTTPRequestHandler):
         log.append(('GET', path))
         if path.endswith('/people'): return self._json(people)
         if path.endswith('/projects'): return self._json(projects)
+        if path.endswith('/labels'): return self._json(labels)
         if path.endswith('/workflows'):
             if not self.headers.get('X-Comp-Url'): return self._json({"success": False, "status": False, "code": 1202, "message": "INCOMPLETE HEADERS COMPANY URL MISSING"})
             return self._json(workflows)
@@ -89,7 +93,7 @@ class H(BaseHTTPRequestHandler):
             return self._json({"id": 600000 + counter[0], "description": body['description'], "creator": {"id": ME}, "created_at": "2026-10-07T10:00:00+00:00"})
         m = re.search(r'/projects/(\d+)/todolists/(\d+)/tasks$', path)
         if m:
-            t = copy.deepcopy(base_task); t.update(id=950000 + counter[0], ticket=str(40000 + counter[0]), title=body.get('title'), assigned=body.get('assigned', []), logged_hours=None, logged_mins=None, by_me=True, creator={'id': ME}, completed=False)
+            t = copy.deepcopy(base_task); t.update(id=950000 + counter[0], ticket=str(40000 + counter[0]), title=body.get('title'), assigned=body.get('assigned', []), labels=body.get('labels', []), description=body.get('description'), start_date=body.get('start_date'), due_date=body.get('due_date'), estimated_hours=body.get('estimated_hours'), estimated_mins=body.get('estimated_mins'), percent_progress=0, logged_hours=None, logged_mins=None, by_me=True, creator={'id': ME}, completed=False)
             t['project'] = {"id": int(m.group(1)), "name": "Organizational Activities"}; t['list'] = {"id": int(m.group(2)), "name": next((l['title'] for l in todolists if str(l['id']) == m.group(2)), '?')}
             tasks.insert(0, t); return self._json(t)
         self._json({"code": 1301, "message": "Invalid request", "response_code": 200})
@@ -107,6 +111,9 @@ class H(BaseHTTPRequestHandler):
                 if str(t['id']) == m.group(1):
                     if 'completed' in body: t['completed'] = body['completed']
                     if 'assigned' in body: t['assigned'] = body['assigned']
+                    for k in ('title', 'description', 'start_date', 'due_date', 'estimated_hours', 'estimated_mins', 'labels', 'percent_progress'):
+                        if k in body: t[k] = body[k]
+                    if 'progress' in body: return self._json({"code": 1301, "message": "Invalid request", "response_code": 200})
                     if 'stage' in body:
                         sid = str(body['stage'])
                         if sid not in stage_titles: return self._json({"code": 1301, "message": "Invalid request", "response_code": 200})

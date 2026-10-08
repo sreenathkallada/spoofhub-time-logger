@@ -15,6 +15,12 @@ export function useProjects(enabled = true) {
   return useQuery({ queryKey: ['projects'], queryFn: () => api.getProjects(), staleTime: 15 * MIN, enabled });
 }
 
+export function useLabels(enabled = true) {
+  const q = useQuery({ queryKey: ['labels'], queryFn: () => api.getLabels(), staleTime: 60 * MIN, enabled, retry: false });
+  const byId = useMemo(() => Object.fromEntries((q.data || []).map((l) => [String(l.id), l])), [q.data]);
+  return { ...q, byId, list: q.data || [] };
+}
+
 export function useWorkflows(enabled = true) {
   return useQuery({ queryKey: ['workflows'], queryFn: () => api.getWorkflows(), staleTime: 60 * MIN, enabled, retry: false });
 }

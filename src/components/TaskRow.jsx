@@ -9,7 +9,7 @@ import { fmtDuration, fmtDate, isOverdue, isValidEntry, toMinutes } from '../uti
 import { useToast } from './Toast.jsx';
 import TaskExpanded from './TaskExpanded.jsx';
 import { tips } from '../utils/tips.js';
-import { Hand } from 'lucide-react';
+import { Hand, Pencil } from 'lucide-react';
 import { useTakeTask } from '../hooks/useTakeTask.js';
 
 function draftCounts(d) {
@@ -28,7 +28,7 @@ function draftCounts(d) {
   return { pending, failed, saving };
 }
 
-export default function TaskRow({ task, expanded, draft, projectColor, workflow, workflowName, peopleById, myEntries, myTimeLoading, saving }) {
+export default function TaskRow({ task, expanded, draft, projectColor, workflow, workflowName, peopleById, myEntries, myTimeLoading, saving, labelsById = {}, onEdit }) {
   const toggleExpanded = useDrafts((s) => s.toggleExpanded);
   const markCompleted = useDrafts((s) => s.markCompleted);
   const setStageChange = useDrafts((s) => s.setStageChange);
@@ -101,6 +101,7 @@ export default function TaskRow({ task, expanded, draft, projectColor, workflow,
             {task.orphan ? null : <span className="dot" style={{ background: projectColor || '#9AA3AD' }} title={tips.projectDot(task.project?.name)} />}
             <span className="title-text" title={tips.title(task)}>{task.title}</span>
             {task.ticket && <span className="ticket" title={tips.ticket(task.ticket)}>#{task.ticket}</span>}
+            {(task.labels || []).map((lid) => { const l = labelsById[String(lid)]; return l ? <span key={lid} className="label-tag" style={{ '--chip': l.color || '#8a94a0' }} title={tips.label(l.name)}>{l.name}</span> : null; })}
             {unassigned && <span className="badge badge-amber" title={tips.unassigned}>Unassigned</span>}
             {unassigned && <button className="btn-link small take" disabled={saving} title={tips.take} onClick={(e) => { e.stopPropagation(); take(task); }}><Hand size={12} /> Take</button>}
           </div>
@@ -131,6 +132,12 @@ export default function TaskRow({ task, expanded, draft, projectColor, workflow,
             {mine && assigned.length > 1 && <span className="muted" title={tips.assignees(assigneeNames)}>+{assigned.length - 1} {assigned.length === 2 ? 'other' : 'others'}</span>}
           </div>
         </div>
+        {!task.orphan && (
+          <div className="task-progress" title={tips.taskProgress(Number(task.percent_progress) || 0, (task.estimated_hours || task.estimated_mins) ? fmtDuration(task.estimated_hours, task.estimated_mins) : '', task.logged_hours, task.logged_mins)}>
+            <div className="bar"><div className="fill" style={{ width: `${Math.max(0, Math.min(100, Number(task.percent_progress) || 0))}%` }} /></div>
+            <span className="pct">{Number(task.percent_progress) || 0}%</span>
+          </div>
+        )}
         <div className="task-time" title={tips.loggedTotal(task.logged_hours, task.logged_mins, myMinutes)}>
           <Clock size={13} /> {totalLogged}
           {myMinutes > 0 && <span className="muted small"> · you {fmtDuration(0, myMinutes)}</span>}
@@ -140,6 +147,9 @@ export default function TaskRow({ task, expanded, draft, projectColor, workflow,
           {counts.failed > 0 && <span className="badge badge-red" title={tips.badgeFailed(counts.failed)}>{counts.failed} failed</span>}
           {counts.pending > 0 && <span className="badge badge-amber" title={tips.badgePending(counts.pending)}>{counts.pending} unsaved</span>}
         </div>
+        {!task.orphan && mine && onEdit && (
+          <button className="icon-btn edit-task" aria-label={`Edit "${task.title}"`} title={tips.editTask(task.title)} disabled={saving} onClick={(e) => { e.stopPropagation(); onEdit(task); }}><Pencil size={14} /></button>
+        )}
         {!task.orphan && mine && stages.length === 0 && (
           <label className="complete" onClick={(e) => e.stopPropagation()} title={tips.complete(task.title)}>
             <input type="checkbox" checked={completing} onChange={complete} disabled={completing || saving} aria-label={`Mark "${task.title}" complete`} />

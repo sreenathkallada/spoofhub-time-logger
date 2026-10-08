@@ -1,17 +1,18 @@
 import { useMemo } from 'react';
 import { useSettings } from '../store/settings.js';
 import { useDrafts, hasMeaningfulDrafts } from '../store/drafts.js';
-import { useWorkflowStages } from '../hooks/queries.js';
+import { useWorkflowStages, useLabels } from '../hooks/queries.js';
 import TaskRow from './TaskRow.jsx';
 import { tips } from '../utils/tips.js';
 
-export default function TaskList({ tasks, loading, search, projects, peopleById, myTimeByTask, myTimeLoading, saving }) {
+export default function TaskList({ tasks, loading, search, projects, peopleById, myTimeByTask, myTimeLoading, saving, onEdit }) {
   const scope = useSettings((s) => s.scope);
   const userId = useSettings((s) => s.userId);
   const drafts = useDrafts((s) => s.drafts);
   const expanded = useDrafts((s) => s.expanded);
   const completedIds = useDrafts((s) => s.completedIds);
   const { byWorkflow } = useWorkflowStages();
+  const labels = useLabels();
 
   const projectColor = useMemo(() => {
     const m = {};
@@ -66,6 +67,8 @@ export default function TaskList({ tasks, loading, search, projects, peopleById,
           projectColor={projectColor[String(t.project?.id)]}
           workflow={byWorkflow[String(t.workflow?.id)]}
           workflowName={t.workflow?.name}
+          labelsById={labels.byId}
+          onEdit={onEdit}
           peopleById={peopleById}
           myEntries={myTimeByTask[String(t.id)] || []}
           myTimeLoading={myTimeLoading}

@@ -63,6 +63,13 @@ export const tips = {
   weekCellMulti: (n) => `${n} entries in this cell`,
   pickerSearch: 'Type to filter your open tasks',
   pickerItem: (t, mine) => `Add "${t.title}" to the week${mine ? '' : ' (not assigned to you — you can still log time on it)'}`,
+  // task form / labels / progress
+  ntLabels: 'Labels from your account, as coloured tags on the task. Click to toggle.',
+  ntProgress: 'How far along the task is, 0–100%. Independent of the stage.',
+  editTask: (title) => `Edit "${title}": title, description, dates, estimate, assignees, labels and progress. Saved to SpoofHub immediately.`,
+  ntSave: 'Save the changes to SpoofHub now',
+  label: (name) => `Label: ${name}`,
+  taskProgress: (p, est, logH, logM) => `Progress ${p}%${est ? ` · estimate ${est}` : ''}${logH || logM ? ` · logged ${fmtDuration(logH, logM)}` : ''}. Edit via the pencil.`,
   // comments
   commentBox: 'Write a comment on this task. It is posted to SpoofHub immediately when you press Post.',
   commentPost: 'Post this comment to the task now',

@@ -8,7 +8,7 @@ import Header from './Header.jsx';
 import TaskList from './TaskList.jsx';
 import WeekView from './WeekView.jsx';
 import SaveBar from './SaveBar.jsx';
-import NewTaskModal from './NewTaskModal.jsx';
+import TaskFormModal from './TaskFormModal.jsx';
 import SettingsDialog from './SettingsDialog.jsx';
 import SetupScreen from './SetupScreen.jsx';
 
@@ -17,6 +17,7 @@ export default function MainScreen() {
   const toast = useToast();
   const invalidate = useInvalidate();
   const [showNewTask, setShowNewTask] = useState(false);
+  const [editTask, setEditTask] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [reauth, setReauth] = useState(false);
   const [search, setSearch] = useState('');
@@ -108,6 +109,7 @@ export default function MainScreen() {
           myTimeByTask={myTime.byTask}
           myTimeLoading={myTime.isLoading}
           saving={save.running}
+          onEdit={setEditTask}
         />}
       </main>
 
@@ -125,8 +127,17 @@ export default function MainScreen() {
         }}
       />
 
+      {editTask && (
+        <TaskFormModal
+          task={editTask}
+          projects={projects.data || []}
+          peopleById={peopleById}
+          onClose={() => setEditTask(null)}
+          onUpdated={(t) => { setEditTask(null); toast({ message: `Task updated: ${t.title}`, tone: 'success' }); }}
+        />
+      )}
       {showNewTask && (
-        <NewTaskModal
+        <TaskFormModal
           projects={projects.data || []}
           peopleById={peopleById}
           onClose={() => setShowNewTask(false)}
