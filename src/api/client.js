@@ -64,7 +64,8 @@ export function request(method, path, { baseUrl, apiKey, body, query, priority =
           'X-API-KEY': apiKey,
           'X-Comp-Url': hostOf(baseUrl), // required by /workflows; harmless elsewhere
           Accept: 'application/json',
-          ...(body ? { 'Content-Type': 'application/json' } : {}),
+          // The server rejects DELETE with "INCOMPLETE HEADERS" (code 1201) unless Content-Type is present, so send it on every non-GET request.
+          ...(method !== 'GET' ? { 'Content-Type': 'application/json' } : {}),
         },
         body: body ? JSON.stringify(body) : undefined,
         signal: abortSignal,

@@ -115,6 +115,7 @@ class H(BaseHTTPRequestHandler):
         self._json({"code": 1301, "message": "Invalid request", "response_code": 200})
     def do_DELETE(self):
         if not self._auth(): return
+        if not self.headers.get('Content-Type'): return self._json({"success": False, "status": False, "code": 1201, "message": "INCOMPLETE HEADERS"})
         path = urlparse(self.path).path; counter[0] += 1; log.append(('DELETE', path))
         m = re.search(r'/time/(\d+)$', path)
         if m:
